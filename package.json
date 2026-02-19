@@ -8,7 +8,6 @@
         "vscode": "^1.86.0"
     },
     "categories": [
-        "Security",
         "Other"
     ],
     "activationEvents": [],
@@ -20,6 +19,12 @@
                 "name": "vibeguard",
                 "description": "I'll help you scrub secrets before you send them to the AI.",
                 "isSticky": true
+            }
+        ],
+        "commands": [
+            {
+                "command": "vibeguard.restoreSecrets",
+                "title": "VibeGuard: Restore Secrets"
             }
         ]
     },

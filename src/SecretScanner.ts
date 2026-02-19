@@ -8,24 +8,48 @@ export class SecretScanner {
         { name: 'Bearer Token', regex: /Bearer\s+[a-zA-Z0-9\-\._]{20,}/ }
     ];
 
-    public static scan(text: string): string | null {
-        // 1. Regex Scan
+    public static redact(text: string): { redactedText: string, secrets: Map<string, string> } {
+        let redactedText = text;
+        const secrets = new Map<string, string>();
+        let secretCounter = 1;
+
+        // 1. Regex Scan & Replace
         for (const pattern of this.PATTERNS) {
-            if (pattern.regex.test(text)) {
-                return `Detected ${pattern.name}`;
+            // Global regex match to find all instances
+            const globalRegex = new RegExp(pattern.regex, 'g');
+            let match;
+            while ((match = globalRegex.exec(text)) !== null) {
+                const secretValue = match[0];
+                // Check if we already have a placeholder for this exact secret to reuse calls
+                let placeholder = `{{SECRET_${secretCounter}}}`;
+
+                // Avoid replacing substrings of already replaced secrets by handling order or uniqueness if needed.
+                // For simplicity in this iteration, we replace exact string matches. 
+                // A more robust parser would track indices, but replaceAll works for non-overlapping secrets.
+
+                if (!secrets.has(placeholder)) { // logic could be improved to dedupe values, but unique IDs are safer
+                    secrets.set(placeholder, secretValue);
+                    redactedText = redactedText.replace(secretValue, placeholder);
+                    secretCounter++;
+                }
             }
         }
 
-        // 2. Entropy Scan
-        // Split text into words to avoid flagging normal sentences, but check long strings
-        const words = text.split(/\s+/);
+        // 2. Entropy Scan (Simplified for non-overlapping)
+        const words = redactedText.split(/\s+/);
         for (const word of words) {
+            // Don't scan things that are already placeholders
+            if (word.startsWith('{{SECRET_') && word.endsWith('}}')) continue;
+
             if (word.length > 20 && this.calculateEntropy(word) > 4.5) {
-                return `Detected High Entropy String (Potential Secret)`;
+                const placeholder = `{{SECRET_${secretCounter}}}`;
+                secrets.set(placeholder, word);
+                redactedText = redactedText.replace(word, placeholder);
+                secretCounter++;
             }
         }
 
-        return null;
+        return { redactedText, secrets };
     }
 
     private static calculateEntropy(str: string): number {
