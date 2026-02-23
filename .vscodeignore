@@ -11,3 +11,5 @@ tsconfig.test.json
 **/*.ts
 **/*.map
 *.vsix
+out/test/**
+playground/**
