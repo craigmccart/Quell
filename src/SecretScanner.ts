@@ -58,12 +58,12 @@ export class SecretScanner {
         { name: 'Google Gemini API Key', regex: /AIzaSy[0-9A-Za-z\-_]{33}/ },
 
         // ── Payment Providers ────────────────
-        { name: 'Stripe Secret Key', regex: /sk_(live|test)_[0-9a-zA-Z]{24,99}/ },
-        { name: 'Stripe Restricted Key', regex: /rk_(live|test)_[0-9a-zA-Z]{24,99}/ },
-        { name: 'Stripe Publishable Key', regex: /pk_(live|test)_[0-9a-zA-Z]{24,99}/ },
-        { name: 'Square Access Token', regex: /sq0atp-[0-9A-Za-z\-_]{22}/ },
-        { name: 'Square OAuth Secret', regex: /sq0csp-[0-9A-Za-z\-_]{43}/ },
-        { name: 'PayPal Braintree Token', regex: /access_token\$production\$[0-9a-z]{16}\$[0-9a-f]{32}/ },
+        { name: 'Stripe Secret Key', regex: /sk_(live|test)_[0-9a-zA-Z_]{10,99}/ },
+        { name: 'Stripe Restricted Key', regex: /rk_(live|test)_[0-9a-zA-Z_]{10,99}/ },
+        { name: 'Stripe Publishable Key', regex: /pk_(live|test)_[0-9a-zA-Z_]{10,99}/ },
+        { name: 'Square Access Token', regex: /sq0atp-[0-9A-Za-z\-_]{10,40}/ },
+        { name: 'Square OAuth Secret', regex: /sq0csp-[0-9A-Za-z\-_]{20,50}/ },
+        { name: 'PayPal Braintree Token', regex: /access_token\$(production|sandbox)\$[0-9a-zA-Z_$]{10,}/ },
 
         // ── Version Control & Dev ────────────
         { name: 'GitHub Personal Access Token', regex: /ghp_[a-zA-Z0-9]{36}/ },

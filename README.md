@@ -1,64 +1,92 @@
 # 🛡️ VyberGuard
 
-**Prevent secret leakage in AI chats — fully offline, zero network calls.**
+![Hero Banner](assets/hero-banner.png)
 
-VyberGuard intercepts your prompts, scans for API keys / tokens / passwords / connection strings, and replaces them with secure placeholders before the AI ever sees them. Real values are stored safely in your OS Keychain.
+**Stop leaking secrets to AI.** VyberGuard intercepts your prompts, scans for API keys, tokens, passwords, and connection strings — and replaces them with secure placeholders before the AI ever sees them. Real values are stored safely in your OS Keychain.
 
-> Built for the age of AI-assisted coding. Your secrets stay on your machine.
+> 100% offline. Zero network calls. Zero telemetry. Your secrets never leave your machine.
+
+---
+
+## 🚨 The Problem
+
+Every time you paste code into an AI chat (Copilot, Cursor, Windsurf, Antigravity), secrets get silently transmitted to cloud-hosted models:
+
+| What You Do | What Leaks |
+|---|---|
+| Paste `.env` asking "why won't my DB connect?" | Database passwords, API keys |
+| Copy `payment.ts` asking "why is Stripe failing?" | `sk_live_XXXXXXX` (live Stripe key) |
+| AI IDE indexes your workspace | Every `.env`, `config.json`, `credentials.yml` |
+
+**VyberGuard is the security layer between you and the AI.**
+
+---
+
+## ⚡ How It Works
+
+![How It Works](assets/how-it-works.png)
+
+1. **You write code** with real secrets
+2. **VyberGuard scans** using 75+ regex patterns + Shannon entropy analysis
+3. **AI receives safe placeholders** — `{{SECRET_xxx}}` instead of your real keys
+
+```diff
+# Before (DANGEROUS)
+- STRIPE_KEY=sk_live_51Mzxyz123abcABCDEF
+- DATABASE_URL=postgres://admin:p4ssw0rd@db.example.com:5432/mydb
+
+# After VyberGuard (SAFE)
++ STRIPE_KEY={{SECRET_52c14bbbc02e}}
++ DATABASE_URL={{SECRET_f6d2e5e49c86}}
++ AWS_REGION=us-east-1  ← non-secret, left unchanged
+```
 
 ---
 
 ## ✨ Features
 
-### 🔍 Chat Participant
-Talk to `@vyberguard` in your IDE's chat panel. Every prompt is scanned before it reaches the AI.
+### 📋 Copy Redacted (`Ctrl+Shift+C`)
+Select code → press the shortcut → paste into any AI chat. Secrets are replaced, non-secrets are preserved. The primary workflow.
 
-- Detects secrets and shows a security intercept with redacted output
-- `/context` command shares a redacted view of your `.env` files (keys visible, values masked)
+### 📥 Sanitized Paste (`Ctrl+Shift+V`)
+Paste from any source with secrets automatically stripped. Works with code copied from browsers, terminals, or other files.
 
-### 🧬 75+ Secret Patterns
-Regex-based detection for:
-- **Cloud**: AWS, Google Cloud, Azure
-- **AI/ML**: OpenAI, Anthropic, Hugging Face, Cohere, Replicate, Gemini
-- **Payments**: Stripe, Square, PayPal
-- **Version Control**: GitHub, GitLab, Bitbucket (PATs, OAuth, fine-grained tokens)
-- **Communication**: Slack, Discord, Telegram, Twilio
-- **Email**: SendGrid, Mailgun, Mailchimp
-- **Hosting**: Heroku, Vercel, Netlify, DigitalOcean, Render, Railway, Fly.io
-- **Auth**: JWT, Bearer, Basic Auth, OAuth
-- **Cryptographic**: RSA, EC, DSA, OpenSSH, PGP private keys
-- **Databases**: PostgreSQL, MySQL, MongoDB, Redis, AMQP connection URIs
-- **Infrastructure**: Hashicorp Vault, Terraform Cloud, Doppler
-- **E-commerce**: Shopify
-- **Monitoring**: Datadog, Sentry, New Relic
-- **Package Registries**: NPM, PyPI, NuGet, RubyGems
+### 🔍 75+ Secret Patterns
+Regex-based detection covering:
+
+| Category | Examples |
+|---|---|
+| **Cloud** | AWS (`AKIA...`), Google Cloud, Azure |
+| **AI/ML** | OpenAI, Anthropic, Hugging Face, Gemini |
+| **Payments** | Stripe (`sk_live_...`), Square, PayPal |
+| **Version Control** | GitHub PATs, GitLab, Bitbucket |
+| **Communication** | Slack, Discord, Telegram, Twilio |
+| **Databases** | PostgreSQL, MongoDB, Redis, MySQL URIs |
+| **Auth** | JWTs, Bearer tokens, Basic Auth, OAuth |
+| **Crypto** | RSA, EC, OpenSSH, PGP private keys |
+| **Hosting** | Vercel, Netlify, Heroku, DigitalOcean, Fly.io |
+| **+ 30 more** | SendGrid, Shopify, Datadog, NPM, PyPI... |
 
 ### 📊 Shannon Entropy Analysis
-Catches high-randomness tokens that don't match any known pattern — configurable threshold and token length.
+Catches high-randomness tokens that don't match any known pattern — configurable threshold and minimum token length.
+
+### 🤖 AI Indexing Shield
+One-click toggle that generates `.cursorignore`, `.windsurfignore`, `.antigravityignore`, `.aiderignore`, and `.aiignore` files — blocking AI IDEs from silently indexing your secret files.
+
+### ⚡ Clipboard Sentry
+Passive clipboard monitoring that warns you within 3 seconds when a secret is on your clipboard. Purely informational — never modifies your data.
 
 ### 🔒 Secure Storage
-Secrets are stored in your **OS Keychain** via VS Code's SecretStorage API. Never written to disk in plaintext.
+Secrets stored in your **OS Keychain** via VS Code's SecretStorage API (Windows Credential Manager / macOS Keychain / libsecret). Never written to disk in plaintext. Restorable anytime.
 
 ### 📝 Inline Decorations
-Placeholder tokens (`{{SECRET_xxx}}`) are highlighted inline with orange borders and 🔒 icons.
+`{{SECRET_xxx}}` placeholders get orange dashed borders and 🔒 icons in the editor. Hover for restore options.
 
-### 🖱️ Context Menu
-Right-click to:
-- **Redact Selection** — scan and replace secrets in highlighted text
-- **Redact Active File** — scan the entire file
-- **Restore Secrets** — bring back real values from the keychain
-
-### 🔎 Workspace Scanner
-Scan your entire workspace for secrets across all code files with a single command.
+### 💬 Chat Participant (`@vyberguard`)
+Talk to `@vyberguard` in VS Code's chat panel. Every prompt is scanned before it reaches the AI. Use `/context` to safely share `.env` file structure.
 
 ### ⚠️ Save Warning
-Get warned when saving a file that still contains raw secrets.
-
-### 📊 Status Bar
-Persistent shield indicator showing protection state (idle / scanning / alert / safe).
-
-### 📋 Output Log
-Full activity log in the Output panel under "VyberGuard".
+Get notified when saving a file that still contains raw secrets — with a one-click "Redact Now" option.
 
 ---
 
@@ -78,44 +106,49 @@ Full activity log in the Output panel under "VyberGuard".
 
 ## 📦 Commands
 
-| Command | Description |
-|---------|-------------|
-| `VyberGuard: Redact Secrets in Active File` | Scan and redact the current file |
-| `VyberGuard: Redact Secrets in Selection` | Scan and redact selected text |
-| `VyberGuard: Restore Secrets in Active File` | Restore placeholders from keychain |
-| `VyberGuard: Scan Workspace for Secrets` | Full workspace scan with report |
-| `VyberGuard: Show VyberGuard Log` | Open the output panel |
+| Command | Keybinding | Description |
+|---------|------------|-------------|
+| Copy Redacted | `Ctrl+Shift+C` | Copy with secrets redacted |
+| Sanitized Paste | `Ctrl+Shift+V` | Paste with secrets stripped |
+| Redact Active File | — | Redact all secrets in current file |
+| Redact Selection | — | Redact secrets in selected text |
+| Restore Secrets | — | Restore placeholders from Keychain |
+| Scan Workspace | — | Full workspace secret audit |
+| Show Log | — | Open the VyberGuard output panel |
 
 ---
 
 ## 🔐 Privacy & Security
 
-- **100% offline** — zero network calls, zero telemetry
-- **No external APIs** — all detection is regex + entropy, running locally
-- **OS Keychain storage** — secrets stored via VS Code's SecretStorage (backed by your OS credential manager)
-- **Open source** — audit the code yourself
-
----
-
-## 🚀 Getting Started
-
-1. Install the extension (VSIX or Marketplace)
-2. Open any workspace
-3. Use `@vyberguard` in the chat panel, or right-click any file to scan
-4. Use `/context` to safely share `.env` file structure with the AI
+- **100% offline** — zero network calls, zero telemetry, zero external APIs
+- **OS Keychain storage** — secrets encrypted at rest by your operating system
+- **Non-destructive** — real values always restorable from the Keychain
+- **Open source** — [audit the code yourself](https://github.com/craigmccart/VyberGuard)
 
 ---
 
 ## 🤝 Compatible IDEs
 
-Works with any VS Code-based IDE:
-- VS Code
-- Cursor
-- Windsurf
-- Antigravity (Gemini Code Assist)
+| IDE | Supported | AI Shield |
+|-----|-----------|-----------|
+| VS Code | ✅ | `.aiignore` |
+| Cursor | ✅ | `.cursorignore` |
+| Windsurf | ✅ | `.windsurfignore` |
+| Antigravity | ✅ | `.antigravityignore` |
+| Aider | ✅ | `.aiderignore` |
+
+---
+
+## 🚀 Getting Started
+
+1. Install VyberGuard (VSIX or Marketplace)
+2. Open any workspace
+3. Press `Ctrl+Shift+C` to copy code safely for AI chat
+4. Enable the **AI Indexing Shield** in the sidebar to block AI file indexing
+5. Use `@vyberguard /context` to safely share `.env` structure
 
 ---
 
 ## 📄 License
 
-MIT
+[MIT](LICENSE) — free and open source.

@@ -2,7 +2,7 @@
     "name": "vyberguard",
     "displayName": "VyberGuard",
     "description": "Prevent secret leakage in AI chats — intercepts prompts, redacts API keys/tokens/passwords, and stores them securely in your OS Keychain. Zero network calls, fully offline.",
-    "version": "1.5.0",
+    "version": "2.0.0",
     "publisher": "vyberguard-team",
     "icon": "assets/icon.png",
     "license": "MIT",
