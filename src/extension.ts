@@ -6,12 +6,13 @@ import { StatusBar } from './StatusBar';
 import { DecorationProvider } from './DecorationProvider';
 import { SidebarProvider } from './SidebarProvider';
 import { AiShieldManager } from './AiShieldManager';
+import { DiagnosticProvider } from './DiagnosticProvider';
 
 // ─────────────────────────────────────────────────────
 //  Helper: Read VS Code settings into ScannerConfig
 // ─────────────────────────────────────────────────────
 function getConfig(): ScannerConfig {
-    const cfg = vscode.workspace.getConfiguration('vyberguard');
+    const cfg = vscode.workspace.getConfiguration('quell');
     return {
         enableEntropy: cfg.get<boolean>('enableEntropyScanning', DEFAULT_CONFIG.enableEntropy),
         entropyThreshold: cfg.get<number>('entropyThreshold', DEFAULT_CONFIG.entropyThreshold),
@@ -33,15 +34,24 @@ export function activate(context: vscode.ExtensionContext) {
 
     StatusBar.init(context);
     DecorationProvider.init(context);
+    DiagnosticProvider.init(context);
 
     // ── Sidebar Dashboard ────────────────
     const sidebarProvider = new SidebarProvider(context.extensionUri);
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider('vyberguard.dashboard', sidebarProvider)
+        vscode.window.registerWebviewViewProvider('quell.dashboard', sidebarProvider)
     );
 
     Logger.info(`Activated with ${SecretScanner.patternCount} built-in patterns.`);
     Logger.info('Ready to intercept secrets in chat, files, and .env context.');
+
+    // ── Track last active text editor (so sidebar buttons work) ──
+    let lastActiveEditor = vscode.window.activeTextEditor;
+    context.subscriptions.push(
+        vscode.window.onDidChangeActiveTextEditor(editor => {
+            if (editor) { lastActiveEditor = editor; }
+        })
+    );
 
     // ── AI Shield: restore previous session state ────────────
     const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri?.fsPath;
@@ -52,9 +62,9 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     // ── Vibe Check: first-install workspace scan ─────────────
-    const hasRunVibeCheck = context.globalState.get<boolean>('vyberguard.vibeCheckDone', false);
+    const hasRunVibeCheck = context.globalState.get<boolean>('quell.vibeCheckDone', false);
     if (!hasRunVibeCheck && workspacePath) {
-        context.globalState.update('vyberguard.vibeCheckDone', true);
+        context.globalState.update('quell.vibeCheckDone', true);
         setTimeout(async () => {
             const files = await vscode.workspace.findFiles(
                 '**/*.{ts,js,tsx,jsx,py,env,json,yml,yaml,toml}',
@@ -73,11 +83,11 @@ export function activate(context: vscode.ExtensionContext) {
             if (totalSecrets > 0) {
                 Logger.warn(`VIBE CHECK: Found ${totalSecrets} potential secret(s) across ${fileCount} file(s).`);
                 vscode.window.showWarningMessage(
-                    `🛡️ VyberGuard Vibe Check: Found ${totalSecrets} exposed secret(s) in ${fileCount} file(s). Enable AI Shield to protect them.`,
+                    `🛡️ Quell Vibe Check: Found ${totalSecrets} exposed secret(s) in ${fileCount} file(s). Enable AI Shield to protect them.`,
                     'Enable AI Shield', 'Scan Details'
                 ).then(choice => {
-                    if (choice === 'Enable AI Shield') { vscode.commands.executeCommand('vyberguard.enableAiShield'); }
-                    if (choice === 'Scan Details') { vscode.commands.executeCommand('vyberguard.scanWorkspace'); }
+                    if (choice === 'Enable AI Shield') { vscode.commands.executeCommand('quell.enableAiShield'); }
+                    if (choice === 'Scan Details') { vscode.commands.executeCommand('quell.scanWorkspace'); }
                 });
                 StatusBar.setExposureBadge(totalSecrets);
             }
@@ -87,8 +97,8 @@ export function activate(context: vscode.ExtensionContext) {
     // ─────────────────────────────────────────
     // 1. Chat Participant
     // ─────────────────────────────────────────
-    const vyberguard = vscode.chat.createChatParticipant(
-        'vyberguard',
+    const quell = vscode.chat.createChatParticipant(
+        'quell',
         async (request, _chatContext, stream, _token) => {
 
             // ── /context command ──
@@ -104,11 +114,12 @@ export function activate(context: vscode.ExtensionContext) {
 
                 const redactedEnv = await EnvManager.getRedactedEnv();
 
-                stream.markdown('🛡️ **VyberGuard Context Scanner**\n\n');
-                stream.markdown('Below is a **redacted** view of your workspace environment files. ');
-                stream.markdown('Keys are visible so the AI understands the shape, but all values are masked.\n\n');
+                stream.markdown('## 🛡️ Quell Context Scanner\n\n');
+                stream.markdown('I have analyzed your environment files. Below is a **safely redacted** view of your workspace configuration.\n\n');
+                stream.markdown('> 💡 Key names are preserved so the AI understands the architecture, but all sensitive values are masked.\n\n');
                 stream.markdown('```env\n' + redactedEnv + '\n```\n\n');
-                stream.markdown('> *Real values never leave your machine.*');
+                stream.markdown('---\n');
+                stream.markdown('✨ *Real values never leave your machine.*');
 
                 StatusBar.setSafe();
                 Logger.info('CHAT: Served redacted .env context.');
@@ -132,18 +143,20 @@ export function activate(context: vscode.ExtensionContext) {
                 Logger.redaction(secrets.size);
                 StatusBar.setAlert(secrets.size);
 
-                stream.markdown('🚨 **VyberGuard Security Intercept**\n\n');
-                stream.markdown(`I intercepted your prompt and found **${secrets.size}** sensitive item(s).\n\n`);
-                stream.markdown(`| Detail | Value |\n|---|---|\n`);
+                stream.markdown('## 🚨 Quell Security Intercept\n\n');
+                stream.markdown(`I intercepted your prompt and found **${secrets.size}** sensitive item(s) that should not be shared with AI models.\n\n`);
+                
+                stream.markdown(`| Detail | Description |\n|:---|:---|\n`);
                 stream.markdown(`| **Detected** | ${typesList} |\n`);
-                stream.markdown(`| **Action** | Redacted & stored in OS Keychain |\n\n`);
+                stream.markdown(`| **Protection** | Redacted & stored in OS Keychain |\n\n`);
 
-                stream.markdown('**Sanitised Payload:**\n');
+                stream.markdown('### 🛡️ Sanitized Payload\n');
+                stream.markdown('Copy the text below into your chat window:\n\n');
                 stream.markdown('```\n' + redactedText + '\n```\n\n');
 
                 stream.markdown('---\n');
-                stream.markdown('> 💡 Paste the sanitised text into your editor, then use the button below to restore real values securely.\n\n');
-                stream.markdown('[$(key) Restore Secrets in Active File](command:vyberguard.restoreSecrets)\n');
+                stream.markdown('**✨ Next Step:** After pasting the safe version above, use the button below to restore the real secrets in your editor.\n\n');
+                stream.markdown('[$(key) Restore Secrets in Active File](command:quell.restoreSecrets)\n');
 
                 return { metadata: { command: 'redacted' } };
             }
@@ -152,25 +165,26 @@ export function activate(context: vscode.ExtensionContext) {
             StatusBar.setSafe();
             Logger.scan('Chat Prompt', 0, []);
 
-            stream.markdown('🛡️ **VyberGuard — All Clear**\n\n');
-            stream.markdown('No secrets detected in your prompt. Safe to proceed.\n\n');
+            stream.markdown('## ✨ Quell — All Clear\n\n');
+            stream.markdown('No secrets detected in your prompt. Your data is safe to share with the AI model.\n\n');
+            stream.markdown('**Your Prompt:**\n');
             stream.markdown('> ' + userPrompt);
 
             return { metadata: { command: 'echo' } };
         }
     );
 
-    vyberguard.iconPath = new vscode.ThemeIcon('shield');
-    context.subscriptions.push(vyberguard);
+    quell.iconPath = new vscode.ThemeIcon('shield');
+    context.subscriptions.push(quell);
 
 
     // ─────────────────────────────────────────
     // 2. Command: Restore Secrets
     // ─────────────────────────────────────────
-    const restoreCmd = vscode.commands.registerCommand('vyberguard.restoreSecrets', async () => {
-        const editor = vscode.window.activeTextEditor;
+    const restoreCmd = vscode.commands.registerCommand('quell.restoreSecrets', async () => {
+        const editor = vscode.window.activeTextEditor || lastActiveEditor;
         if (!editor) {
-            vscode.window.showErrorMessage('VyberGuard: No active editor. Open the file containing placeholders first.');
+            vscode.window.showErrorMessage('Quell: No active editor. Open the file containing placeholders first.');
             return;
         }
 
@@ -180,7 +194,7 @@ export function activate(context: vscode.ExtensionContext) {
         const matches = text.match(placeholderRegex);
 
         if (!matches) {
-            vscode.window.showInformationMessage('🛡️ VyberGuard: No placeholders found in this file.');
+            vscode.window.showInformationMessage('🛡️ Quell: No placeholders found in this file.');
             return;
         }
 
@@ -190,7 +204,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: '🛡️ VyberGuard — Restoring Secrets',
+            title: '🛡️ Quell — Restoring Secrets',
             cancellable: false,
         }, async () => {
             for (const placeholder of uniqueMatches) {
@@ -211,13 +225,13 @@ export function activate(context: vscode.ExtensionContext) {
                 );
                 await editor.edit((editBuilder) => editBuilder.replace(fullRange, restoredText));
 
-                vscode.window.showInformationMessage(`🛡️ VyberGuard: Restored ${restoredCount} secret(s) successfully.`);
+                vscode.window.showInformationMessage(`🛡️ Quell: Restored ${restoredCount} secret(s) successfully.`);
                 Logger.restore(restoredCount);
                 DecorationProvider.updateDecorations(editor);
                 sidebarProvider.refresh();
             } else {
                 vscode.window.showWarningMessage(
-                    'VyberGuard: Found placeholders but could not retrieve values. ' +
+                    'Quell: Found placeholders but could not retrieve values. ' +
                     'They may have expired or been stored in a different session.'
                 );
             }
@@ -228,10 +242,10 @@ export function activate(context: vscode.ExtensionContext) {
     // ─────────────────────────────────────────
     // 3. Command: Redact Active File
     // ─────────────────────────────────────────
-    const redactFileCmd = vscode.commands.registerCommand('vyberguard.redactActiveFile', async () => {
-        const editor = vscode.window.activeTextEditor;
+    const redactFileCmd = vscode.commands.registerCommand('quell.redactActiveFile', async () => {
+        const editor = vscode.window.activeTextEditor || lastActiveEditor;
         if (!editor) {
-            vscode.window.showErrorMessage('VyberGuard: No active editor found.');
+            vscode.window.showErrorMessage('Quell: No active editor found.');
             return;
         }
 
@@ -243,18 +257,18 @@ export function activate(context: vscode.ExtensionContext) {
         const { redactedText, secrets, detectedTypes } = SecretScanner.redact(text, config);
 
         if (secrets.size === 0) {
-            vscode.window.showInformationMessage('🛡️ VyberGuard: No secrets found in this file.');
+            vscode.window.showInformationMessage('🛡️ Quell: No secrets found in this file.');
             StatusBar.setSafe();
             Logger.scan('Redact File', 0, []);
             return;
         }
 
         // ── Confirmation dialog (configurable) ──
-        const confirmEnabled = vscode.workspace.getConfiguration('vyberguard').get<boolean>('confirmBeforeRedact', true);
+        const confirmEnabled = vscode.workspace.getConfiguration('quell').get<boolean>('confirmBeforeRedact', true);
         if (confirmEnabled) {
             const typesList = Array.from(detectedTypes).join(', ');
             const choice = await vscode.window.showWarningMessage(
-                `VyberGuard found ${secrets.size} secret(s) [${typesList}]. Redact them now?`,
+                `Quell found ${secrets.size} secret(s) [${typesList}]. Redact them now?`,
                 { modal: true, detail: 'Real values will be stored in your OS Keychain and replaced with safe placeholders.' },
                 'Redact', 'Cancel'
             );
@@ -278,8 +292,8 @@ export function activate(context: vscode.ExtensionContext) {
 
         const typesList = Array.from(detectedTypes).join(', ');
         vscode.window.showInformationMessage(
-            `🛡️ VyberGuard: Redacted ${secrets.size} secret(s) [${typesList}]. ` +
-            `Run "VyberGuard: Restore Secrets" to bring them back.`
+            `🛡️ Quell: Redacted ${secrets.size} secret(s) [${typesList}]. ` +
+            `Run "Quell: Restore Secrets" to bring them back.`
         );
 
         StatusBar.setAlert(secrets.size);
@@ -293,16 +307,16 @@ export function activate(context: vscode.ExtensionContext) {
     // ─────────────────────────────────────────
     // 4. Command: Redact Selection
     // ─────────────────────────────────────────
-    const redactSelectionCmd = vscode.commands.registerCommand('vyberguard.redactSelection', async () => {
-        const editor = vscode.window.activeTextEditor;
+    const redactSelectionCmd = vscode.commands.registerCommand('quell.redactSelection', async () => {
+        const editor = vscode.window.activeTextEditor || lastActiveEditor;
         if (!editor) {
-            vscode.window.showErrorMessage('VyberGuard: No active editor found.');
+            vscode.window.showErrorMessage('Quell: No active editor found.');
             return;
         }
 
         const selection = editor.selection;
         if (selection.isEmpty) {
-            vscode.window.showInformationMessage('VyberGuard: No text selected.');
+            vscode.window.showInformationMessage('Quell: No text selected.');
             return;
         }
 
@@ -313,7 +327,7 @@ export function activate(context: vscode.ExtensionContext) {
         const { redactedText, secrets, detectedTypes } = SecretScanner.redact(selectedText, config);
 
         if (secrets.size === 0) {
-            vscode.window.showInformationMessage('🛡️ VyberGuard: No secrets found in selection.');
+            vscode.window.showInformationMessage('🛡️ Quell: No secrets found in selection.');
             StatusBar.setSafe();
             return;
         }
@@ -327,7 +341,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         const typesList = Array.from(detectedTypes).join(', ');
         vscode.window.showInformationMessage(
-            `🛡️ VyberGuard: Redacted ${secrets.size} secret(s) in selection [${typesList}].`
+            `🛡️ Quell: Redacted ${secrets.size} secret(s) in selection [${typesList}].`
         );
 
         StatusBar.setAlert(secrets.size);
@@ -341,10 +355,10 @@ export function activate(context: vscode.ExtensionContext) {
     // ─────────────────────────────────────────
     // 5. Command: Scan Workspace
     // ─────────────────────────────────────────
-    const scanWorkspaceCmd = vscode.commands.registerCommand('vyberguard.scanWorkspace', async () => {
+    const scanWorkspaceCmd = vscode.commands.registerCommand('quell.scanWorkspace', async () => {
         const folders = vscode.workspace.workspaceFolders;
         if (!folders) {
-            vscode.window.showErrorMessage('VyberGuard: No workspace folder open.');
+            vscode.window.showErrorMessage('Quell: No workspace folder open.');
             return;
         }
 
@@ -355,12 +369,12 @@ export function activate(context: vscode.ExtensionContext) {
 
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: '🛡️ VyberGuard — Scanning Workspace',
+            title: '🛡️ Quell — Scanning Workspace',
             cancellable: true,
         }, async (progress, token) => {
             const files = await vscode.workspace.findFiles(
                 '**/*.{ts,js,tsx,jsx,py,rb,go,java,cs,php,env,yaml,yml,json,toml,ini,cfg,conf,xml,properties}',
-                '{**/node_modules/**,**/.git/**,**/dist/**,**/build/**,**/out/**,**/*.min.*}'
+                '{**/node_modules/**,**/.git/**,**/dist/**,**/build/**,**/out/**,**/*.min.*,**/package-lock.json,**/yarn.lock,**/pnpm-lock.yaml,**/.next*/**,**/.nuxt/**,**/.vercel/**,**/_next/**,**/static/chunks/**}'
             );
 
             const total = files.length;
@@ -394,26 +408,19 @@ export function activate(context: vscode.ExtensionContext) {
         });
 
         if (totalSecrets === 0) {
-            vscode.window.showInformationMessage('🛡️ VyberGuard: Workspace is clean — no secrets detected!');
+            vscode.window.showInformationMessage('🛡️ Quell: Workspace is clean — no secrets detected!');
             StatusBar.setSafe();
             Logger.scan('Workspace', 0, []);
             sidebarProvider.recordScan(0);
         } else {
-            // Show detailed findings in output channel
-            Logger.warn(`WORKSPACE SCAN: Found ${totalSecrets} potential secret(s) in ${findings.length} file(s):`);
-            for (const f of findings) {
-                Logger.warn(`  📄 ${f.file}: ${f.count} secret(s) [${f.types.join(', ')}]`);
-            }
-            Logger.show();
+            // Show summary finding in output channel
+            Logger.warn(`WORKSPACE SCAN: Found ${totalSecrets} potential secret(s) in ${findings.length} file(s).`);
 
             StatusBar.setAlert(totalSecrets);
             sidebarProvider.recordScan(totalSecrets, findings);
             vscode.window.showWarningMessage(
-                `VyberGuard: Found ${totalSecrets} potential secret(s) in ${findings.length} file(s). See Output panel for details.`,
-                'Show Log'
-            ).then((choice) => {
-                if (choice === 'Show Log') { Logger.show(); }
-            });
+                `Quell: Found ${totalSecrets} potential secret(s) in ${findings.length} file(s). See Quell dashboard for details.`
+            );
         }
     });
 
@@ -421,7 +428,7 @@ export function activate(context: vscode.ExtensionContext) {
     // ─────────────────────────────────────────
     // 6. Command: Show Log
     // ─────────────────────────────────────────
-    const showLogCmd = vscode.commands.registerCommand('vyberguard.showLog', () => {
+    const showLogCmd = vscode.commands.registerCommand('quell.showLog', () => {
         Logger.show();
     });
 
@@ -436,12 +443,12 @@ export function activate(context: vscode.ExtensionContext) {
                 const md = new vscode.MarkdownString();
                 md.isTrusted = true;
                 md.supportHtml = true;
-                md.appendMarkdown('### 🛡️ VyberGuard Secure Placeholder\n\n');
+                md.appendMarkdown('### 🛡️ Quell Secure Placeholder\n\n');
                 md.appendMarkdown('This value has been redacted and stored in your **OS Keychain**.\n\n');
                 md.appendMarkdown('| | |\n|---|---|\n');
                 md.appendMarkdown('| **Status** | 🔒 Encrypted in vault |\n');
                 md.appendMarkdown('| **Scope** | This VS Code session |\n\n');
-                md.appendMarkdown('[$(key) Restore Secrets](command:vyberguard.restoreSecrets "Restore all secrets in this file")');
+                md.appendMarkdown('[$(key) Restore Secrets](command:quell.restoreSecrets "Restore all secrets in this file")');
                 return new vscode.Hover(md, range);
             }
         },
@@ -463,12 +470,12 @@ export function activate(context: vscode.ExtensionContext) {
 
             // Show a non-blocking warning — we don't want to prevent saves
             vscode.window.showWarningMessage(
-                `🛡️ VyberGuard: This file may contain ${secrets.size} secret(s) [${typesList}]. ` +
-                `Consider running "VyberGuard: Redact Active File" before sharing.`,
+                `🛡️ Quell: This file may contain ${secrets.size} secret(s) [${typesList}]. ` +
+                `Consider running "Quell: Redact Active File" before sharing.`,
                 'Redact Now', 'Dismiss'
             ).then((choice) => {
                 if (choice === 'Redact Now') {
-                    vscode.commands.executeCommand('vyberguard.redactActiveFile');
+                    vscode.commands.executeCommand('quell.redactActiveFile');
                 }
             });
         }
@@ -478,7 +485,7 @@ export function activate(context: vscode.ExtensionContext) {
     // ─────────────────────────────────────────
     // 10. Command: Refresh Sidebar
     // ─────────────────────────────────────────
-    const refreshSidebarCmd = vscode.commands.registerCommand('vyberguard.refreshSidebar', () => {
+    const refreshSidebarCmd = vscode.commands.registerCommand('quell.refreshSidebar', () => {
         sidebarProvider.refresh();
     });
 
@@ -489,16 +496,16 @@ export function activate(context: vscode.ExtensionContext) {
     //     clean text into the active editor.
     //     Works with ANY chat interface!
     // ─────────────────────────────────────────
-    const sanitizedPasteCmd = vscode.commands.registerCommand('vyberguard.sanitizedPaste', async () => {
+    const sanitizedPasteCmd = vscode.commands.registerCommand('quell.sanitizedPaste', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
-            vscode.window.showErrorMessage('VyberGuard: No active editor to paste into.');
+            vscode.window.showErrorMessage('Quell: No active editor to paste into.');
             return;
         }
 
         const clipboardText = await vscode.env.clipboard.readText();
         if (!clipboardText) {
-            vscode.window.showInformationMessage('VyberGuard: Clipboard is empty.');
+            vscode.window.showInformationMessage('Quell: Clipboard is empty.');
             return;
         }
 
@@ -519,7 +526,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             const typesList = Array.from(detectedTypes).join(', ');
             vscode.window.showWarningMessage(
-                `🛡️ VyberGuard: Intercepted ${secrets.size} secret(s) from clipboard [${typesList}]. Pasted sanitized version.`,
+                `🛡️ Quell: Intercepted ${secrets.size} secret(s) from clipboard [${typesList}]. Pasted sanitized version.`,
                 'Show Log'
             ).then((choice) => {
                 if (choice === 'Show Log') { Logger.show(); }
@@ -550,10 +557,10 @@ export function activate(context: vscode.ExtensionContext) {
     //     clipboard. User can then safely paste
     //     into any AI chat.
     // ─────────────────────────────────────────
-    const copyRedactedCmd = vscode.commands.registerCommand('vyberguard.copyRedacted', async () => {
+    const copyRedactedCmd = vscode.commands.registerCommand('quell.copyRedacted', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
-            vscode.window.showErrorMessage('VyberGuard: No active editor.');
+            vscode.window.showErrorMessage('Quell: No active editor.');
             return;
         }
 
@@ -577,7 +584,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             const typesList = Array.from(detectedTypes).join(', ');
             vscode.window.showInformationMessage(
-                `🛡️ VyberGuard: Copied redacted text to clipboard — ${secrets.size} secret(s) removed [${typesList}]. Safe to paste into AI chat!`
+                `🛡️ Quell: Copied redacted text to clipboard — ${secrets.size} secret(s) removed [${typesList}]. Safe to paste into AI chat!`
             );
 
             StatusBar.setAlert(secrets.size);
@@ -587,7 +594,7 @@ export function activate(context: vscode.ExtensionContext) {
         } else {
             // No secrets — copy as-is
             await vscode.env.clipboard.writeText(text);
-            vscode.window.showInformationMessage('🛡️ VyberGuard: No secrets detected. Copied to clipboard as-is.');
+            vscode.window.showInformationMessage('🛡️ Quell: No secrets detected. Copied to clipboard as-is.');
             StatusBar.setSafe();
             Logger.scan('Copy Redacted', 0, []);
         }
@@ -597,9 +604,9 @@ export function activate(context: vscode.ExtensionContext) {
     // ─────────────────────────────────────────
     // 14. Command: Enable AI Shield
     // ─────────────────────────────────────────
-    const enableAiShieldCmd = vscode.commands.registerCommand('vyberguard.enableAiShield', () => {
+    const enableAiShieldCmd = vscode.commands.registerCommand('quell.enableAiShield', () => {
         if (!workspacePath) {
-            vscode.window.showErrorMessage('VyberGuard: No workspace folder open.');
+            vscode.window.showErrorMessage('Quell: No workspace folder open.');
             return;
         }
         const created = AiShieldManager.enable(workspacePath);
@@ -607,30 +614,33 @@ export function activate(context: vscode.ExtensionContext) {
         sidebarProvider.setAiShield(true);
         Logger.info(`AI Shield ENABLED — injected patterns into ${created} ignore file(s).`);
         vscode.window.showInformationMessage(
-            `🛡️ VyberGuard AI Shield ON — AI indexers are now blocked from reading your secret files in ${created} ignore file(s).`
+            `🛡️ Quell AI Shield ON — AI indexers are now blocked from reading your secret files in ${created} ignore file(s).`
         );
     });
 
     // ─────────────────────────────────────────
     // 15. Command: Disable AI Shield
     // ─────────────────────────────────────────
-    const disableAiShieldCmd = vscode.commands.registerCommand('vyberguard.disableAiShield', () => {
+    const disableAiShieldCmd = vscode.commands.registerCommand('quell.disableAiShield', () => {
         if (!workspacePath) {
-            vscode.window.showErrorMessage('VyberGuard: No workspace folder open.');
+            vscode.window.showErrorMessage('Quell: No workspace folder open.');
             return;
         }
         AiShieldManager.disable(workspacePath);
         StatusBar.setAiShield(false);
         sidebarProvider.setAiShield(false);
         Logger.info('AI Shield DISABLED.');
-        vscode.window.showInformationMessage('🛡️ VyberGuard AI Shield OFF — AI indexers can now access all files.');
+        vscode.window.showInformationMessage('🛡️ Quell AI Shield OFF — AI indexers can now access all files.');
     });
 
     // ─────────────────────────────────────────
     // 16. Clipboard Sentry
-    //     Polls clipboard every 3s when window
-    //     is focused. Warns if a secret is
-    //     detected, without touching the data.
+    // ─────────────────────────────────────────
+    // 16. Clipboard Sentry & Auto-Sanitizer
+    //     Polls clipboard when window is focused.
+    //     If autoSanitizeClipboard is enabled, it
+    //     instantly strips secrets from clipboard
+    //     and stores them securely.
     // ─────────────────────────────────────────
     let lastClipboardText = '';
     let clipboardWarningActive = false;
@@ -640,25 +650,55 @@ export function activate(context: vscode.ExtensionContext) {
             const text = await vscode.env.clipboard.readText();
             if (!text || text === lastClipboardText) { return; }
             lastClipboardText = text;
+            
             const config = getConfig();
-            const { secrets, detectedTypes } = SecretScanner.redact(text, config);
-            if (secrets.size > 0 && !clipboardWarningActive) {
-                clipboardWarningActive = true;
-                sidebarProvider.setClipboardWarning(true);
+            const autoSanitize = vscode.workspace.getConfiguration('quell').get<boolean>('autoSanitizeClipboard', false);
+            const { secrets, detectedTypes, redactedText } = SecretScanner.redact(text, config);
+            
+            if (secrets.size > 0) {
                 const typesList = Array.from(detectedTypes).join(', ');
-                Logger.warn(`CLIPBOARD SENTRY: Detected ${secrets.size} secret(s) on clipboard [${typesList}]. Use Ctrl+Shift+C to safely copy.`);
-                vscode.window.showWarningMessage(
-                    `⚠️ VyberGuard: Secret detected on clipboard [${typesList}]. Use Ctrl+Shift+C to copy safely for AI chat!`,
-                    'How?'
-                ).then(choice => {
-                    clipboardWarningActive = false;
-                    sidebarProvider.setClipboardWarning(false);
-                    if (choice === 'How?') {
-                        vscode.window.showInformationMessage(
-                            '1. Select the text in your editor.\n2. Press Ctrl+Shift+C (Copy Redacted).\n3. Paste into AI chat — secrets are replaced with safe placeholders.'
-                        );
+                
+                if (autoSanitize) {
+                    // Auto-Sanitize: Overwrite clipboard with safe placeholders
+                    for (const [placeholder, secretValue] of secrets) {
+                        await context.secrets.store(placeholder, secretValue);
                     }
-                });
+                    await vscode.env.clipboard.writeText(redactedText);
+                    lastClipboardText = redactedText; // prevent infinite loop
+                    
+                    Logger.warn(`CLIPBOARD SENTRY: Auto-sanitized ${secrets.size} secret(s) [${typesList}].`);
+                    vscode.window.withProgress(
+                        { location: vscode.ProgressLocation.Notification, title: `🛡️ Quell: Auto-sanitized ${secrets.size} secret(s) [${typesList}]. Safe to paste.`, cancellable: false },
+                        () => new Promise(resolve => setTimeout(resolve, 5000))
+                    );
+                    
+                    StatusBar.setAlert(secrets.size);
+                    Logger.scan('Clipboard Auto-Sanitize', secrets.size, Array.from(detectedTypes));
+                    sidebarProvider.recordScan(secrets.size);
+                    
+                } else {
+                    // Just warn (Legacy behavior)
+                    if (!clipboardWarningActive) {
+                        clipboardWarningActive = true;
+                        sidebarProvider.setClipboardWarning(true);
+                        Logger.warn(`CLIPBOARD SENTRY: Detected ${secrets.size} secret(s) on clipboard [${typesList}]. Use Ctrl+Shift+C to safely copy.`);
+                        vscode.window.showWarningMessage(
+                            `⚠️ Quell: Secret detected on clipboard [${typesList}]. Enable 'Auto Sanitize Clipboard' in settings to protect AI chats!`,
+                            'Enable Auto-Sanitize', 'How to copy safely?'
+                        ).then(choice => {
+                            clipboardWarningActive = false;
+                            sidebarProvider.setClipboardWarning(false);
+                            if (choice === 'Enable Auto-Sanitize') {
+                                vscode.workspace.getConfiguration('quell').update('autoSanitizeClipboard', true, vscode.ConfigurationTarget.Global);
+                                vscode.window.showInformationMessage('🛡️ Quell: Auto-sanitize enabled. Future secrets will be instantly protected.');
+                            } else if (choice === 'How to copy safely?') {
+                                vscode.window.showInformationMessage(
+                                    '1. Select the text in your editor.\n2. Press Ctrl+Shift+C (Copy Redacted).\n3. Paste into AI chat — secrets are replaced with safe placeholders.'
+                                );
+                            }
+                        });
+                    }
+                }
             } else if (secrets.size === 0) {
                 if (clipboardWarningActive) {
                     clipboardWarningActive = false;
@@ -666,9 +706,33 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             }
         } catch { /* clipboard read failures are silent */ }
-    }, 3000);
+    }, 1000);
     context.subscriptions.push({ dispose: () => clearInterval(clipboardSentryInterval) });
 
+
+    // ─────────────────────────────────────────
+    // 17. Command: Open File
+    // ─────────────────────────────────────────
+    const openFileCmd = vscode.commands.registerCommand('quell.openFile', async (relPath: string) => {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) return;
+        const uri = vscode.Uri.joinPath(workspaceFolders[0].uri, relPath);
+        const doc = await vscode.workspace.openTextDocument(uri);
+        await vscode.window.showTextDocument(doc);
+    });
+
+    // ─────────────────────────────────────────
+    // 18. Command: Toggle Auto-Sanitize
+    // ─────────────────────────────────────────
+    const toggleAutoSanitizeCmd = vscode.commands.registerCommand('quell.toggleAutoSanitize', async () => {
+        const config = vscode.workspace.getConfiguration('quell');
+        const current = config.get<boolean>('autoSanitizeClipboard', false);
+        await config.update('autoSanitizeClipboard', !current, vscode.ConfigurationTarget.Global);
+        vscode.window.showInformationMessage(
+            `🛡️ Quell: Clipboard Auto-Sanitize is now ${!current ? 'ENABLED' : 'DISABLED'}.`
+        );
+        sidebarProvider.refresh();
+    });
 
     // ─────────────────────────────────────────
     // 13. Register all subscriptions
@@ -686,6 +750,8 @@ export function activate(context: vscode.ExtensionContext) {
         disableAiShieldCmd,
         hoverProvider,
         saveWatcher,
+        openFileCmd,
+        toggleAutoSanitizeCmd
     );
 
 
@@ -699,5 +765,6 @@ export function activate(context: vscode.ExtensionContext) {
 // ═════════════════════════════════════════════════════
 export function deactivate() {
     DecorationProvider.dispose();
+    DiagnosticProvider.dispose();
     Logger.dispose();
 }

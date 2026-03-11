@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <linearGradient id="qg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+  </defs>
+  <text x="12" y="19" text-anchor="middle" font-family="'Georgia', serif" font-weight="900" font-size="20" fill="url(#qg)" style="letter-spacing: -1px;">Q</text>
+  <path d="M16 16 L20 20" stroke="url(#qg)" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

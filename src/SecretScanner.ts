@@ -155,8 +155,8 @@ export class SecretScanner {
         // ── Misc / Generic ───────────────────
         { name: 'Postman API Key', regex: /PMAK-[a-f0-9]{24}-[a-f0-9]{34}/ },
         { name: 'Okta API Token', regex: /00[a-zA-Z0-9\-_]{40}/ },
-        { name: 'Password in Assignment', regex: /(?:password|passwd|pwd|secret)\s*[=:]\s*['"][^'"]{8,}['"]/i },
-        { name: 'Token in Assignment', regex: /(?:token|api_key|apikey|access_key|auth_token|secret_key)\s*[=:]\s*['"][^'"]{16,}['"]/i },
+        { name: 'Password in Assignment', regex: /(?:password|passwd|pwd)\s*[=:]\s*['"][^'"\n\r]{8,64}['"]/i },
+        { name: 'Token in Assignment', regex: /(?:token|api_key|apikey|access_key|auth_token|secret_key)\s*[=:]\s*['"][^'"\n\r]{16,100}['"]/i },
     ];
 
 
@@ -248,6 +248,52 @@ export class SecretScanner {
 
                 // Skip URLs / file paths that aren't connection strings
                 if (/^https?:\/\//.test(token) && !/:\/\/[^:]+:[^@]+@/.test(token)) { continue; }
+
+                // Skip npm / yarn integrity hashes (sha256-, sha384-, sha512-)
+                if (/^sha[0-9]+-/i.test(token)) { continue; }
+
+                // Skip registry URL fragments (e.g. //registry.npmjs.org/...)
+                if (/^(\/\/)?registry\.npmjs\.org\//i.test(token)) { continue; }
+                if (/^(\/\/)?registry\.yarnpkg\.com\//i.test(token)) { continue; }
+
+                // Skip URL fragments that are clearly partial paths (start with //)
+                if (/^\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\//i.test(token)) { continue; }
+
+                // Skip tokens that look like package tarball URLs (contain .tgz)
+                if (/\.tgz$/i.test(token)) { continue; }
+
+                // Skip government / documentation URLs and regulatory reference IDs
+                if (/^(https?:\/\/)?(www\.)?[a-z0-9.-]+\.(gov|edu|mil)\//i.test(token)) { continue; }
+
+                // Skip tokens that are mostly path-like (contain multiple /)
+                if ((token.match(/\//g) || []).length >= 3 && /^[a-zA-Z0-9@.\-_/]+$/.test(token)) { continue; }
+
+                // Skip code identifiers: dotted property access (e.g. SCORE_WEIGHTS.emergencyContacts)
+                if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.[a-zA-Z_$][a-zA-Z0-9_$]*/.test(token)) { continue; }
+
+                // Skip SCREAMING_SNAKE_CASE identifiers (e.g. VITE_SUPABASE_ANON_KEY)
+                if (/^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$/.test(token)) { continue; }
+
+                // Skip camelCase / PascalCase identifiers that are purely alpha (e.g. handlePasswordChange, scoreError)
+                if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(token) && /[a-z]/.test(token) && /[A-Z]/.test(token)) { continue; }
+
+                // Skip environment variable references (import.meta.env.*, process.env.*)
+                if (/^(import\.meta\.env|process\.env)\./i.test(token)) { continue; }
+
+                // Skip well-known character set definitions (base32, base36, hex alphabets)
+                if (/^[A-Z0-9]{20,36}$/.test(token) && /^[A-Z2-7]+$|^[0-9A-Z]+$|^[0-9A-F]+$/i.test(token)) { continue; }
+
+                // Skip base64 blobs (>80 chars) — likely source maps, webpack output, not secrets
+                if (token.length > 80 && /^[A-Za-z0-9+/=_-]+$/.test(token)) { continue; }
+
+                // Skip webpack module identifiers (e.g. __WEBPACK_IMPORTED_MODULE_)
+                if (/__WEBPACK_/.test(token) || /__esModule/.test(token)) { continue; }
+
+                // Skip URL-encoded strings (e.g. C%3A%5CUsers%5C...)
+                if (/%[0-9A-Fa-f]{2}/.test(token) && (token.match(/%/g) || []).length >= 3) { continue; }
+
+                // Skip minified CSS/JS fragments (contain lots of escaped sequences)
+                if (/\\n|\\t|\\r/.test(token) && token.length > 30) { continue; }
 
                 if (token.length >= config.minimumTokenLength) {
                     const entropy = this.calculateEntropy(token);

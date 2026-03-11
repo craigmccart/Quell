@@ -1,11 +1,42 @@
 # Changelog
 
-All notable changes to VyberGuard will be documented in this file.
+All notable changes to Quell will be documented in this file.
+
+## [2.2.0] - 2026-03-11
+
+### ✨ Cursor & Windsurf Protection
+- **Clipboard Auto-Sanitize** — when enabled, Quell monitors your clipboard every second and automatically replaces copied secrets with safe `{{SECRET_...}}` placeholders before you can paste them into native AI chats
+- **Dashboard toggle** — enable/disable Auto-Sanitize directly from the Quell sidebar (no need to find it in settings)
+- Auto-dismiss notification (5s timeout) when secrets are sanitized
+
+### 🔍 Live Editor Diagnostics
+- **Inline secret warnings** — exposed secrets now show yellow squiggly underlines in the editor in real-time
+- **Problems Panel** integration — all detected secrets appear in VS Code's Problems tab
+- **Quick Fix lightbulb** — click 💡 or press `Ctrl+.` to instantly redact secrets from the editor
+
+### 🐛 Major False Positive Reduction
+- Removed `secret` keyword from Password regex (too common in code like `console.error('secret:', ...)`)
+- Password/Token regexes no longer match across line breaks and are length-capped
+- Entropy scanner now skips: SCREAMING_SNAKE_CASE identifiers, camelCase/PascalCase variables, dotted property access, env variable references, webpack identifiers, URL-encoded paths, base64 source maps, base32/base36 character sets, minified CSS/JS fragments
+- Workspace scan excludes: `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `.next*/`, `.nuxt/`, `.vercel/`, `_next/`, `static/chunks/`
+
+### 🛠 UX Improvements
+- **Sidebar buttons now work without clicking into the editor first** — Redact File, Restore Secrets, etc. operate on the last focused file
+- **Clickable findings** in the dashboard — click a file in the Findings list to open it directly
+- Clipboard Sentry warning now offers one-click "Enable Auto-Sanitize" button
+- Clipboard polling interval reduced from 3s to 1s for faster interception
+
+## [2.1.0] - 2026-03-11
+
+### ✨ Rebrand: Quell
+- **Renamed from VyberGuard to Quell** — new identity across all UI, commands, and branding
+- Cleaned up all internal identifiers, settings, and command IDs to use `quell.*`
+- Updated AI Shield markers and status bar branding
 
 ## [2.0.0] - 2026-03-05
 
-### ✨ Rebrand & Redesign
-- **Renamed from VibeGuard to VyberGuard** — new identity across all UI, commands, and branding
+### ✨ Redesign & Identity
+- **Consolidated identity as VyberGuard** (previously VibeGuard)
 - **Premium sidebar redesign** — glassmorphism cards, teal accent gradients, pulse animations, breathing status dot, shimmer effects, and refined typography
 - **Updated extension icon** — sleek shield + lock design
 
@@ -35,7 +66,7 @@ All notable changes to VyberGuard will be documented in this file.
 - 75+ secret detection patterns (up from 14) covering AWS, Google, Azure, OpenAI, Anthropic, Stripe, GitHub, GitLab, Slack, Discord, JWTs, database connection strings, private keys, and more
 - Shannon Entropy analysis for catching unknown/proprietary API keys
 - Status bar indicator with live scanning/alert/safe states
-- Dedicated Output Channel logging ("VyberGuard" in Output panel)
+- Dedicated Output Channel logging ("Quell" in Output panel)
 - User-configurable settings: entropy toggle, threshold, min token length, custom patterns, whitelisting, inline decorations, confirmation dialog
 - Inline editor decorations for placeholder tokens (orange borders + 🔒 icons)
 - "Redact Selection" command with context menu integration

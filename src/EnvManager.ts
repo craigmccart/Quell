@@ -27,7 +27,7 @@ export class EnvManager {
      * reads them asynchronously, and returns a combined redacted string.
      * 
      * Keys are preserved (e.g. `DATABASE_URL`) so the AI understands the shape,
-     * but all values are replaced with `<HIDDEN_BY_VYBERGUARD>`.
+     * but all values are replaced with `<HIDDEN_BY_QUELL>`.
      */
     public static async getRedactedEnv(): Promise<string> {
         const envFiles = await vscode.workspace.findFiles(
@@ -45,7 +45,7 @@ export class EnvManager {
 
         for (const uri of envFiles) {
             const relPath = vscode.workspace.asRelativePath(uri);
-            combinedContent += `\n# ─── ${relPath} (Redacted by VyberGuard) ───\n`;
+            combinedContent += `\n# ─── ${relPath} (Redacted by Quell) ───\n`;
 
             try {
                 // Async file read — does NOT block the extension host
@@ -66,7 +66,7 @@ export class EnvManager {
                     if (equalsIdx > 0) {
                         const key = trimmed.substring(0, equalsIdx).trim();
                         // Expose key name, mask value
-                        combinedContent += `${key}=<HIDDEN_BY_VYBERGUARD>\n`;
+                        combinedContent += `${key}=<HIDDEN_BY_QUELL>\n`;
                     } else {
                         combinedContent += line + ' # <Warning: Unparsed Line>\n';
                     }

@@ -1,5 +1,5 @@
 /**
- * VyberGuard — SecretScanner Unit Tests
+ * Quell — SecretScanner Unit Tests
  * 
  * Run with: npm test
  * (compiles with tsconfig.test.json, then runs with Node)
@@ -61,7 +61,7 @@ function assertNoSecrets(input: string, config?: ScannerConfig): void {
 //  Test Suites
 // ═══════════════════════════════════════
 
-console.log('\n🛡️  VyberGuard SecretScanner Tests\n');
+console.log('\n🛡️  Quell SecretScanner Tests\n');
 
 // ── AWS ──────────────────────────────
 console.log('☁️  AWS Patterns:');

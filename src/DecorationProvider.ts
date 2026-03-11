@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 /**
- * Provides inline editor decorations for VyberGuard placeholders.
+ * Provides inline editor decorations for Quell placeholders.
  * When a file contains {{SECRET_xxx}} tokens, they get highlighted
  * with an orange dashed border and a lock icon so they're unmissable.
  */
@@ -48,7 +48,7 @@ export class DecorationProvider {
 
     /** Scans the document for placeholder tokens and applies decorations */
     public static updateDecorations(editor: vscode.TextEditor): void {
-        const config = vscode.workspace.getConfiguration('vyberguard');
+        const config = vscode.workspace.getConfiguration('quell');
         if (!config.get<boolean>('showInlineDecorations', true)) {
             editor.setDecorations(this.placeholderDecorationType, []);
             return;
@@ -65,9 +65,9 @@ export class DecorationProvider {
 
             const hoverMsg = new vscode.MarkdownString();
             hoverMsg.isTrusted = true;
-            hoverMsg.appendMarkdown('**🛡️ VyberGuard Secure Placeholder**\n\n');
+            hoverMsg.appendMarkdown('**🛡️ Quell Secure Placeholder**\n\n');
             hoverMsg.appendMarkdown('The real secret is stored in your OS Keychain.\n\n');
-            hoverMsg.appendMarkdown('[Restore Secrets](command:vyberguard.restoreSecrets "Restore all secrets in this file")');
+            hoverMsg.appendMarkdown('[Restore Secrets](command:quell.restoreSecrets "Restore all secrets in this file")');
 
             decorations.push({
                 range: new vscode.Range(startPos, endPos),

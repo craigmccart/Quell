@@ -1,8 +1,6 @@
-# 🛡️ VyberGuard
+# Quell
 
-![Hero Banner](assets/hero-banner.png)
-
-**Stop leaking secrets to AI.** VyberGuard intercepts your prompts, scans for API keys, tokens, passwords, and connection strings — and replaces them with secure placeholders before the AI ever sees them. Real values are stored safely in your OS Keychain.
+**Stop leaking secrets to AI.** Quell intercepts your prompts, scans for API keys, tokens, passwords, and connection strings — and replaces them with secure placeholders before the AI ever sees them. Real values are stored safely in your OS Keychain.
 
 > 100% offline. Zero network calls. Zero telemetry. Your secrets never leave your machine.
 
@@ -18,16 +16,14 @@ Every time you paste code into an AI chat (Copilot, Cursor, Windsurf, Antigravit
 | Copy `payment.ts` asking "why is Stripe failing?" | `sk_live_XXXXXXX` (live Stripe key) |
 | AI IDE indexes your workspace | Every `.env`, `config.json`, `credentials.yml` |
 
-**VyberGuard is the security layer between you and the AI.**
+**Quell is the security layer between you and the AI.**
 
 ---
 
 ## ⚡ How It Works
 
-![How It Works](assets/how-it-works.png)
-
 1. **You write code** with real secrets
-2. **VyberGuard scans** using 75+ regex patterns + Shannon entropy analysis
+2. **Quell scans** using 75+ regex patterns + Shannon entropy analysis
 3. **AI receives safe placeholders** — `{{SECRET_xxx}}` instead of your real keys
 
 ```diff
@@ -35,7 +31,7 @@ Every time you paste code into an AI chat (Copilot, Cursor, Windsurf, Antigravit
 - STRIPE_KEY=sk_live_51Mzxyz123abcABCDEF
 - DATABASE_URL=postgres://admin:p4ssw0rd@db.example.com:5432/mydb
 
-# After VyberGuard (SAFE)
+# After Quell (SAFE)
 + STRIPE_KEY={{SECRET_52c14bbbc02e}}
 + DATABASE_URL={{SECRET_f6d2e5e49c86}}
 + AWS_REGION=us-east-1  ← non-secret, left unchanged
@@ -73,8 +69,11 @@ Catches high-randomness tokens that don't match any known pattern — configurab
 ### 🤖 AI Indexing Shield
 One-click toggle that generates `.cursorignore`, `.windsurfignore`, `.antigravityignore`, `.aiderignore`, and `.aiignore` files — blocking AI IDEs from silently indexing your secret files.
 
-### ⚡ Clipboard Sentry
-Passive clipboard monitoring that warns you within 3 seconds when a secret is on your clipboard. Purely informational — never modifies your data.
+### ⚡ Clipboard Sentry & Auto-Sanitize
+Passive clipboard monitoring that warns you within 1 second when a secret is on your clipboard. Enable **Auto-Sanitize** from the sidebar dashboard to automatically replace clipboard secrets with safe placeholders — so even a regular `Ctrl+V` into Cursor or Windsurf chat is safe.
+
+### 🔍 Live Editor Diagnostics
+Exposed secrets are highlighted with yellow squiggly underlines in real-time as you type. They appear in VS Code's **Problems** panel. Click the 💡 lightbulb (or `Ctrl+.`) for a one-click **Quick Fix** to redact them instantly.
 
 ### 🔒 Secure Storage
 Secrets stored in your **OS Keychain** via VS Code's SecretStorage API (Windows Credential Manager / macOS Keychain / libsecret). Never written to disk in plaintext. Restorable anytime.
@@ -82,8 +81,8 @@ Secrets stored in your **OS Keychain** via VS Code's SecretStorage API (Windows 
 ### 📝 Inline Decorations
 `{{SECRET_xxx}}` placeholders get orange dashed borders and 🔒 icons in the editor. Hover for restore options.
 
-### 💬 Chat Participant (`@vyberguard`)
-Talk to `@vyberguard` in VS Code's chat panel. Every prompt is scanned before it reaches the AI. Use `/context` to safely share `.env` file structure.
+### 💬 Chat Participant (`@quell`)
+Talk to `@quell` in VS Code's chat panel. Every prompt is scanned before it reaches the AI. Use `/context` to safely share `.env` file structure.
 
 ### ⚠️ Save Warning
 Get notified when saving a file that still contains raw secrets — with a one-click "Redact Now" option.
@@ -94,13 +93,14 @@ Get notified when saving a file that still contains raw secrets — with a one-c
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `vyberguard.enableEntropyScanning` | `true` | Enable Shannon Entropy analysis |
-| `vyberguard.entropyThreshold` | `4.5` | Minimum entropy to flag (2.0–7.0) |
-| `vyberguard.minimumTokenLength` | `20` | Minimum token length for entropy scanning |
-| `vyberguard.customPatterns` | `[]` | Custom regex patterns (`[{name, regex}]`) |
-| `vyberguard.whitelistPatterns` | `[]` | Regex patterns to exclude from detection |
-| `vyberguard.showInlineDecorations` | `true` | Show inline decorations for placeholders |
-| `vyberguard.confirmBeforeRedact` | `true` | Confirmation dialog before file redaction |
+| `quell.enableEntropyScanning` | `true` | Enable Shannon Entropy analysis |
+| `quell.entropyThreshold` | `4.5` | Minimum entropy to flag (2.0–7.0) |
+| `quell.minimumTokenLength` | `20` | Minimum token length for entropy scanning |
+| `quell.customPatterns` | `[]` | Custom regex patterns (`[{name, regex}]`) |
+| `quell.whitelistPatterns` | `[]` | Regex patterns to exclude from detection |
+| `quell.showInlineDecorations` | `true` | Show inline decorations for placeholders |
+| `quell.confirmBeforeRedact` | `true` | Confirmation dialog before file redaction |
+| `quell.autoSanitizeClipboard` | `false` | Auto-replace clipboard secrets with placeholders |
 
 ---
 
@@ -114,7 +114,7 @@ Get notified when saving a file that still contains raw secrets — with a one-c
 | Redact Selection | — | Redact secrets in selected text |
 | Restore Secrets | — | Restore placeholders from Keychain |
 | Scan Workspace | — | Full workspace secret audit |
-| Show Log | — | Open the VyberGuard output panel |
+| Show Log | — | Open the Quell output panel |
 
 ---
 
@@ -123,7 +123,7 @@ Get notified when saving a file that still contains raw secrets — with a one-c
 - **100% offline** — zero network calls, zero telemetry, zero external APIs
 - **OS Keychain storage** — secrets encrypted at rest by your operating system
 - **Non-destructive** — real values always restorable from the Keychain
-- **Open source** — [audit the code yourself](https://github.com/craigmccart/VyberGuard)
+- **Open source** — [audit the code yourself](https://github.com/craigmccart/Quell)
 
 ---
 
@@ -141,11 +141,12 @@ Get notified when saving a file that still contains raw secrets — with a one-c
 
 ## 🚀 Getting Started
 
-1. Install VyberGuard (VSIX or Marketplace)
+1. Install Quell (VSIX or Marketplace)
 2. Open any workspace
 3. Press `Ctrl+Shift+C` to copy code safely for AI chat
 4. Enable the **AI Indexing Shield** in the sidebar to block AI file indexing
-5. Use `@vyberguard /context` to safely share `.env` structure
+5. Enable **Clipboard Auto-Sanitize** in the sidebar for maximum protection
+6. Use `@quell /context` to safely share `.env` structure
 
 ---
 

@@ -1,14 +1,14 @@
 {
-    "name": "vyberguard",
-    "displayName": "VyberGuard",
+    "name": "quell",
+    "displayName": "Quell",
     "description": "Prevent secret leakage in AI chats — intercepts prompts, redacts API keys/tokens/passwords, and stores them securely in your OS Keychain. Zero network calls, fully offline.",
-    "version": "2.0.0",
-    "publisher": "vyberguard-team",
+    "version": "2.2.0",
+    "publisher": "quell-team",
     "icon": "assets/icon.png",
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/craigmccart/VyberGuard.git"
+        "url": "https://github.com/craigmccart/Quell.git"
     },
     "engines": {
         "vscode": "^1.85.0"
@@ -37,26 +37,26 @@
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "vyberguard-sidebar",
-                    "title": "VyberGuard",
-                    "icon": "assets/vyberguard-sidebar.svg"
+                    "id": "quell-sidebar",
+                    "title": "Quell",
+                    "icon": "assets/quell-sidebar.svg"
                 }
             ]
         },
         "views": {
-            "vyberguard-sidebar": [
+            "quell-sidebar": [
                 {
-                    "id": "vyberguard.dashboard",
+                    "id": "quell.dashboard",
                     "name": "Dashboard",
                     "type": "webview",
-                    "icon": "assets/vyberguard-sidebar.svg"
+                    "icon": "assets/quell-sidebar.svg"
                 }
             ]
         },
         "chatParticipants": [
             {
-                "id": "vyberguard",
-                "name": "vyberguard",
+                "id": "quell",
+                "name": "quell",
                 "description": "I act as your AI security proxy. Talk to me, and I'll scrub your prompts before evaluating them.",
                 "isSticky": true,
                 "commands": [
@@ -69,75 +69,75 @@
         ],
         "commands": [
             {
-                "command": "vyberguard.restoreSecrets",
+                "command": "quell.restoreSecrets",
                 "title": "Restore Secrets in Active File",
-                "category": "VyberGuard",
+                "category": "Quell",
                 "icon": "$(key)"
             },
             {
-                "command": "vyberguard.redactActiveFile",
+                "command": "quell.redactActiveFile",
                 "title": "Redact Secrets in Active File",
-                "category": "VyberGuard",
+                "category": "Quell",
                 "icon": "$(shield)"
             },
             {
-                "command": "vyberguard.redactSelection",
+                "command": "quell.redactSelection",
                 "title": "Redact Secrets in Selection",
-                "category": "VyberGuard",
+                "category": "Quell",
                 "icon": "$(shield)"
             },
             {
-                "command": "vyberguard.scanWorkspace",
+                "command": "quell.scanWorkspace",
                 "title": "Scan Workspace for Secrets",
-                "category": "VyberGuard",
+                "category": "Quell",
                 "icon": "$(search)"
             },
             {
-                "command": "vyberguard.showLog",
-                "title": "Show VyberGuard Log",
-                "category": "VyberGuard",
+                "command": "quell.showLog",
+                "title": "Show Quell Log",
+                "category": "Quell",
                 "icon": "$(output)"
             },
             {
-                "command": "vyberguard.refreshSidebar",
+                "command": "quell.refreshSidebar",
                 "title": "Refresh Sidebar",
-                "category": "VyberGuard",
+                "category": "Quell",
                 "icon": "$(refresh)"
             },
             {
-                "command": "vyberguard.sanitizedPaste",
+                "command": "quell.sanitizedPaste",
                 "title": "Sanitized Paste (Strip Secrets)",
-                "category": "VyberGuard",
+                "category": "Quell",
                 "icon": "$(clippy)"
             },
             {
-                "command": "vyberguard.copyRedacted",
+                "command": "quell.copyRedacted",
                 "title": "Copy Redacted to Clipboard",
-                "category": "VyberGuard",
+                "category": "Quell",
                 "icon": "$(copy)"
             },
             {
-                "command": "vyberguard.enableAiShield",
+                "command": "quell.enableAiShield",
                 "title": "Enable AI Indexing Shield",
-                "category": "VyberGuard",
+                "category": "Quell",
                 "icon": "$(shield)"
             },
             {
-                "command": "vyberguard.disableAiShield",
+                "command": "quell.disableAiShield",
                 "title": "Disable AI Indexing Shield",
-                "category": "VyberGuard",
+                "category": "Quell",
                 "icon": "$(shield)"
             }
         ],
         "keybindings": [
             {
-                "command": "vyberguard.sanitizedPaste",
+                "command": "quell.sanitizedPaste",
                 "key": "ctrl+shift+v",
                 "mac": "cmd+shift+v",
                 "when": "editorTextFocus"
             },
             {
-                "command": "vyberguard.copyRedacted",
+                "command": "quell.copyRedacted",
                 "key": "ctrl+shift+c",
                 "mac": "cmd+shift+c",
                 "when": "editorTextFocus"
@@ -146,57 +146,57 @@
         "menus": {
             "view/title": [
                 {
-                    "command": "vyberguard.refreshSidebar",
-                    "when": "view == vyberguard.dashboard",
+                    "command": "quell.refreshSidebar",
+                    "when": "view == quell.dashboard",
                     "group": "navigation"
                 },
                 {
-                    "command": "vyberguard.scanWorkspace",
-                    "when": "view == vyberguard.dashboard",
+                    "command": "quell.scanWorkspace",
+                    "when": "view == quell.dashboard",
                     "group": "navigation"
                 }
             ],
             "editor/context": [
                 {
-                    "command": "vyberguard.copyRedacted",
+                    "command": "quell.copyRedacted",
                     "when": "editorHasSelection",
-                    "group": "vyberguard@0"
+                    "group": "quell@0"
                 },
                 {
-                    "command": "vyberguard.redactSelection",
+                    "command": "quell.redactSelection",
                     "when": "editorHasSelection",
-                    "group": "vyberguard@1"
+                    "group": "quell@1"
                 },
                 {
-                    "command": "vyberguard.redactActiveFile",
-                    "group": "vyberguard@2"
+                    "command": "quell.redactActiveFile",
+                    "group": "quell@2"
                 },
                 {
-                    "command": "vyberguard.restoreSecrets",
-                    "group": "vyberguard@3"
+                    "command": "quell.restoreSecrets",
+                    "group": "quell@3"
                 }
             ],
             "commandPalette": [
                 {
-                    "command": "vyberguard.redactSelection",
+                    "command": "quell.redactSelection",
                     "when": "editorHasSelection"
                 },
                 {
-                    "command": "vyberguard.refreshSidebar",
+                    "command": "quell.refreshSidebar",
                     "when": "false"
                 }
             ]
         },
         "configuration": {
-            "title": "VyberGuard",
+            "title": "Quell",
             "properties": {
-                "vyberguard.enableEntropyScanning": {
+                "quell.enableEntropyScanning": {
                     "type": "boolean",
                     "default": true,
                     "description": "Enable Shannon Entropy analysis to catch high-randomness tokens that regex alone might miss.",
                     "order": 1
                 },
-                "vyberguard.entropyThreshold": {
+                "quell.entropyThreshold": {
                     "type": "number",
                     "default": 4.5,
                     "minimum": 2.0,
@@ -204,7 +204,7 @@
                     "description": "Minimum Shannon Entropy to flag a token (higher = fewer false positives, lower = more aggressive). Typical API keys score 4.5–6.0.",
                     "order": 2
                 },
-                "vyberguard.minimumTokenLength": {
+                "quell.minimumTokenLength": {
                     "type": "number",
                     "default": 20,
                     "minimum": 8,
@@ -212,7 +212,7 @@
                     "description": "Minimum character length for a token to be considered by entropy scanning.",
                     "order": 3
                 },
-                "vyberguard.customPatterns": {
+                "quell.customPatterns": {
                     "type": "array",
                     "default": [],
                     "description": "Additional custom regex patterns for secret detection. Each entry needs a 'name' and 'regex' field.",
@@ -235,7 +235,7 @@
                     },
                     "order": 4
                 },
-                "vyberguard.whitelistPatterns": {
+                "quell.whitelistPatterns": {
                     "type": "array",
                     "default": [],
                     "description": "Regex patterns for values that should NOT be flagged as secrets (e.g. known-safe test tokens).",
@@ -244,17 +244,23 @@
                     },
                     "order": 5
                 },
-                "vyberguard.showInlineDecorations": {
+                "quell.showInlineDecorations": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Show inline editor decorations (orange border + lock icon) for VyberGuard placeholders.",
+                    "description": "Show inline editor decorations (orange border + lock icon) for Quell placeholders.",
                     "order": 6
                 },
-                "vyberguard.confirmBeforeRedact": {
+                "quell.confirmBeforeRedact": {
                     "type": "boolean",
                     "default": true,
                     "description": "Show a confirmation dialog before redacting secrets in the active file.",
                     "order": 7
+                },
+                "quell.autoSanitizeClipboard": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Automatically intercept and sanitize secrets detected on your OS clipboard. Crucial for pasting safely into native AI Chats like Cursor and Windsurf.",
+                    "order": 8
                 }
             }
         }

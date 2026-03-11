@@ -7,8 +7,8 @@ import * as path from 'path';
 //  Works with Cursor, Windsurf, Antigravity, Aider, and more.
 // ─────────────────────────────────────────────────────────────
 
-const MARKER_START = '# VyberGuard AI Shield (auto-managed — do not edit this block)';
-const MARKER_END = '# End VyberGuard AI Shield';
+const MARKER_START = '# Quell AI Shield (auto-managed — do not edit this block)';
+const MARKER_END = '# End Quell AI Shield';
 
 /** Glob patterns injected into AI ignore files */
 const SHIELD_PATTERNS = [
@@ -57,7 +57,7 @@ export class AiShieldManager {
     }
 
     /**
-     * Inject the VyberGuard block into all known AI ignore files.
+     * Inject the Quell block into all known AI ignore files.
      * Creates the file if it doesn't exist.
      * Returns the number of files that were newly created/updated.
      */
@@ -71,7 +71,7 @@ export class AiShieldManager {
     }
 
     /**
-     * Remove the VyberGuard block from all AI ignore files.
+     * Remove the Quell block from all AI ignore files.
      * Deletes the file entirely if it becomes empty.
      */
     static disable(workspacePath: string): void {
