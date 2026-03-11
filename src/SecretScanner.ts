@@ -265,8 +265,8 @@ export class SecretScanner {
                 // Skip government / documentation URLs and regulatory reference IDs
                 if (/^(https?:\/\/)?(www\.)?[a-z0-9.-]+\.(gov|edu|mil)\//i.test(token)) { continue; }
 
-                // Skip tokens that are mostly path-like (contain multiple /)
-                if ((token.match(/\//g) || []).length >= 3 && /^[a-zA-Z0-9@.\-_/]+$/.test(token)) { continue; }
+                // Skip tokens that are mostly path-like (contain multiple / and shell-like chars)
+                if ((token.match(/\//g) || []).length >= 2 && /^[a-zA-Z0-9@.\-_/$*~]+$/.test(token)) { continue; }
 
                 // Skip code identifiers: dotted property access (e.g. SCORE_WEIGHTS.emergencyContacts)
                 if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.[a-zA-Z_$][a-zA-Z0-9_$]*/.test(token)) { continue; }
