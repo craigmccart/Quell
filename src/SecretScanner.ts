@@ -71,7 +71,7 @@ export class SecretScanner {
         { name: 'GitHub App Token', regex: /ghu_[a-zA-Z0-9]{36}/ },
         { name: 'GitHub App Server Token', regex: /ghs_[a-zA-Z0-9]{36}/ },
         { name: 'GitHub App Refresh Token', regex: /ghr_[a-zA-Z0-9]{36}/ },
-        { name: 'GitHub Fine-grained PAT', regex: /github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59}/ },
+        { name: 'GitHub Fine-grained PAT', regex: /github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{57,59}/ },
         { name: 'GitLab Personal Access Token', regex: /glpat-[0-9A-Za-z\-_]{20}/ },
         { name: 'GitLab Pipeline Trigger Token', regex: /glptt-[0-9a-f]{40}/ },
         { name: 'GitLab Runner Token', regex: /glrt-[0-9A-Za-z\-_]{20}/ },
@@ -275,7 +275,7 @@ export class SecretScanner {
                 if (/^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$/.test(token)) { continue; }
 
                 // Skip camelCase / PascalCase identifiers that are purely alpha (e.g. handlePasswordChange, scoreError)
-                if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(token) && /[a-z]/.test(token) && /[A-Z]/.test(token)) { continue; }
+                if (/^[a-zA-Z]+$/.test(token) && /[a-z]/.test(token) && /[A-Z]/.test(token)) { continue; }
 
                 // Skip environment variable references (import.meta.env.*, process.env.*)
                 if (/^(import\.meta\.env|process\.env)\./i.test(token)) { continue; }
