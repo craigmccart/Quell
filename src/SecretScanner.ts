@@ -274,8 +274,9 @@ export class SecretScanner {
                 // Skip SCREAMING_SNAKE_CASE identifiers (e.g. VITE_SUPABASE_ANON_KEY)
                 if (/^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$/.test(token)) { continue; }
 
-                // Skip camelCase / PascalCase identifiers that are purely alpha (e.g. handlePasswordChange, scoreError)
-                if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(token) && /[a-z]/.test(token) && /[A-Z]/.test(token)) { continue; }
+                // Skip camelCase / PascalCase identifiers that are purely alphabetic (no digits).
+                // Base64-like secrets almost always contain digits, so tokens with digits are NOT skipped.
+                if (/^[a-zA-Z]+$/.test(token) && /[a-z]/.test(token) && /[A-Z]/.test(token)) { continue; }
 
                 // Skip environment variable references (import.meta.env.*, process.env.*)
                 if (/^(import\.meta\.env|process\.env)\./i.test(token)) { continue; }
