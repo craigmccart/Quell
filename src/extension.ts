@@ -62,6 +62,9 @@ export function activate(context: vscode.ExtensionContext) {
     Logger.info(`Activated with ${SecretScanner.patternCount} built-in patterns.`);
     Logger.info('Ready to intercept secrets in chat, files, and .env context.');
 
+    // ── Session-scoped save warning dismissals (path → secret count at dismissal) ──
+    const dismissedFiles = new Map<string, number>();
+
     // ── Track last active text editor (so sidebar buttons work) ──
     let lastActiveEditor = vscode.window.activeTextEditor;
     context.subscriptions.push(
@@ -78,10 +81,15 @@ export function activate(context: vscode.ExtensionContext) {
         sidebarProvider.setAiShield(shieldOn);
     }
 
+    // ── First install: open walkthrough + delayed vibe-check scan ──
+    const isFirstInstall = !context.globalState.get<boolean>('quell.installed', false);
+    if (isFirstInstall) {
+        context.globalState.update('quell.installed', true);
+        vscode.commands.executeCommand('workbench.action.openWalkthrough', 'Sonofg0tham.quell#quell.gettingStarted', false);
+    }
+
     // ── Vibe Check: first-install workspace scan ─────────────
-    const hasRunVibeCheck = context.globalState.get<boolean>('quell.vibeCheckDone', false);
-    if (!hasRunVibeCheck && workspacePath) {
-        context.globalState.update('quell.vibeCheckDone', true);
+    if (isFirstInstall && workspacePath) {
         setTimeout(async () => {
             const files = await vscode.workspace.findFiles(
                 '**/*.{ts,js,tsx,jsx,py,env,json,yml,yaml,toml}',
@@ -113,7 +121,7 @@ export function activate(context: vscode.ExtensionContext) {
                 Logger.info('VIBE CHECK: Workspace is clean.');
                 vscode.window.showInformationMessage(`✅ Quell: Initial scan complete — no exposed secrets found.${capNote}`);
             }
-        }, 3000);
+        }, 5000);
     }
 
     // ─────────────────────────────────────────
@@ -487,6 +495,10 @@ export function activate(context: vscode.ExtensionContext) {
         const { secrets, detectedTypes } = SecretScanner.redact(text, config);
 
         if (secrets.size > 0) {
+            const filePath = event.document.uri.fsPath;
+            const prevCount = dismissedFiles.get(filePath);
+            if (prevCount !== undefined && prevCount === secrets.size) { return; }
+
             const typesList = Array.from(detectedTypes).join(', ');
             Logger.warn(`SAVE WARNING: ${vscode.workspace.asRelativePath(event.document.uri)} contains ${secrets.size} potential secret(s) [${typesList}]`);
 
@@ -494,10 +506,12 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showWarningMessage(
                 `🛡️ Quell: This file may contain ${secrets.size} secret(s) [${typesList}]. ` +
                 `Consider running "Quell: Redact Active File" before sharing.`,
-                'Redact Now', 'Dismiss'
+                'Redact Now', 'Dismiss for this session'
             ).then((choice) => {
                 if (choice === 'Redact Now') {
                     vscode.commands.executeCommand('quell.redactActiveFile');
+                } else if (choice === 'Dismiss for this session') {
+                    dismissedFiles.set(filePath, secrets.size);
                 }
             });
         }
@@ -784,6 +798,7 @@ export function activate(context: vscode.ExtensionContext) {
     // ─────────────────────────────────────────
     // 19. Command: Toggle Auto-Sanitize
     // ─────────────────────────────────────────
+
     const toggleAutoSanitizeCmd = vscode.commands.registerCommand('quell.toggleAutoSanitize', async () => {
         const config = vscode.workspace.getConfiguration('quell');
         const current = config.get<boolean>('autoSanitizeClipboard', false);
@@ -792,6 +807,23 @@ export function activate(context: vscode.ExtensionContext) {
             `🛡️ Quell: Clipboard Auto-Sanitize is now ${!current ? 'ENABLED' : 'DISABLED'}.`
         );
         sidebarProvider.refresh();
+    });
+
+    // ─────────────────────────────────────────
+    // 20. Command: Open Demo File (walkthrough)
+    // ─────────────────────────────────────────
+    const openDemoCmd = vscode.commands.registerCommand('quell.openDemo', async () => {
+        const doc = await vscode.workspace.openTextDocument({
+            language: 'plaintext',
+            content: [
+                '# Quell Demo — these are fake, officially-published test credentials',
+                '# Try the Quick Fix lightbulb (or press Ctrl+.) on the line below',
+                '',
+                'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE',
+                'AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+            ].join('\n'),
+        });
+        await vscode.window.showTextDocument(doc);
     });
 
     // ─────────────────────────────────────────
@@ -812,7 +844,8 @@ export function activate(context: vscode.ExtensionContext) {
         saveWatcher,
         openFileCmd,
         toggleAutoSanitizeCmd,
-        redactSingleSecretCmd
+        redactSingleSecretCmd,
+        openDemoCmd
     );
 
 

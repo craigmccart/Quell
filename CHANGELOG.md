@@ -2,6 +2,23 @@
 
 All notable changes to Quell will be documented in this file.
 
+## [2.4.0] - 2026-03-22
+
+### 🎓 Native Onboarding Walkthrough
+- **Getting Started walkthrough** — new users now see a 5-step guided walkthrough in the VSCode Welcome page on first install: explains what Quell does, runs a live demo with fake credentials, teaches the two key shortcuts, sets up AI Shield, and builds trust in the offline/keychain privacy model
+- **Demo file command** — `Quell: Open Demo File` opens an untitled file with fake AWS credentials so you can watch detection and redaction in action
+
+### 🔔 Smarter Save Warnings
+- **Session-level dismissal** — save warnings now include a "Dismiss for this session" button. Once dismissed, that file stays silent for the rest of the session unless you add new secrets (in which case the warning comes back)
+- Previously the warning fired on every single save of a file containing secrets — this was the most common source of noise
+
+### ⚙️ Default Change
+- **`confirmBeforeRedact` now defaults to `false`** — the modal confirmation before redacting has been turned off by default. It blocked the editor on every redaction and added friction without benefit for most workflows. You can re-enable it in Settings if you want the extra prompt
+
+### 🔒 Added Patterns
+- **Supabase Publishable Key** (`sb_publishable_...`) — new Supabase anon key format
+- **Supabase Secret Key** (`sb_secret_...`) — new Supabase service role key format
+
 ## [2.3.0] - 2026-03-14
 
 ### 🛡️ Smarter Quick Fix

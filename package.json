@@ -2,7 +2,7 @@
     "name": "quell",
     "displayName": "Quell",
     "description": "Prevent secret leakage in AI chats — intercepts prompts, redacts API keys/tokens/passwords, and stores them securely in your OS Keychain. Zero network calls, fully offline.",
-    "version": "2.3.0",
+    "version": "2.4.0",
     "publisher": "Sonofg0tham",
     "icon": "assets/icon.png",
     "galleryBanner": {
@@ -135,6 +135,12 @@
                 "title": "Disable AI Indexing Shield",
                 "category": "Quell",
                 "icon": "$(shield)"
+            },
+            {
+                "command": "quell.openDemo",
+                "title": "Open Demo File",
+                "category": "Quell",
+                "icon": "$(play)"
             }
         ],
         "keybindings": [
@@ -260,8 +266,8 @@
                 },
                 "quell.confirmBeforeRedact": {
                     "type": "boolean",
-                    "default": true,
-                    "description": "Show a confirmation dialog before redacting secrets in the active file.",
+                    "default": false,
+                    "description": "Show a confirmation dialog before redacting secrets in the active file. Disabled by default as of v2.4.0 — enable if you want an extra confirmation step.",
                     "order": 7
                 },
                 "quell.autoSanitizeClipboard": {
@@ -271,7 +277,51 @@
                     "order": 8
                 }
             }
-        }
+        },
+        "walkthroughs": [
+            {
+                "id": "quell.gettingStarted",
+                "title": "Get started with Quell",
+                "description": "Stop secrets leaking into AI tools — in under 5 minutes.",
+                "steps": [
+                    {
+                        "id": "quell.welcome",
+                        "title": "What is Quell?",
+                        "description": "Quell sits between you and AI tools (Copilot, Cursor, Windsurf). When you copy code or paste prompts, it strips out API keys, passwords, and tokens — replacing them with safe placeholders.\n\nYour real secrets never leave your machine. They're stored in your OS Keychain (Windows Credential Manager / macOS Keychain). No telemetry, no network calls, fully offline.",
+                        "media": { "svg": "assets/quell-sidebar.svg", "altText": "Quell shield" },
+                        "completionEvents": []
+                    },
+                    {
+                        "id": "quell.demo",
+                        "title": "See it catch a secret",
+                        "description": "Click below to open a demo file with a fake AWS key. Watch Quell flag it in real time — then use the Quick Fix lightbulb (or Ctrl+.) to redact it.\n\n[Open demo file](command:quell.openDemo)",
+                        "media": { "svg": "assets/quell-sidebar.svg", "altText": "Quell demo" },
+                        "completionEvents": ["onCommand:quell.redactActiveFile"]
+                    },
+                    {
+                        "id": "quell.shortcuts",
+                        "title": "The two shortcuts to know",
+                        "description": "**Ctrl+Shift+C** — Copy Redacted: copies your selection with secrets stripped. Safe to paste anywhere.\n\n**Ctrl+Shift+V** — Sanitised Paste: pastes from clipboard with secrets automatically removed.\n\n[Try Copy Redacted now](command:quell.copyRedacted)",
+                        "media": { "svg": "assets/quell-sidebar.svg", "altText": "Shortcuts" },
+                        "completionEvents": ["onCommand:quell.copyRedacted", "onCommand:quell.sanitizedPaste"]
+                    },
+                    {
+                        "id": "quell.aiShield",
+                        "title": "Block AI from indexing your secrets",
+                        "description": "Quell can add your secret files (like .env) to your AI IDE's ignore list — so tools like Cursor or Windsurf never index them in the first place.\n\n[Enable AI Shield](command:quell.enableAiShield)",
+                        "media": { "svg": "assets/quell-sidebar.svg", "altText": "AI Shield" },
+                        "completionEvents": ["onCommand:quell.enableAiShield"]
+                    },
+                    {
+                        "id": "quell.done",
+                        "title": "You're protected",
+                        "description": "Quell is running silently in the background. Check the sidebar dashboard any time to see session stats, findings, and settings.\n\n[Open Quell Dashboard](command:workbench.view.extension.quell-sidebar)",
+                        "media": { "svg": "assets/quell-sidebar.svg", "altText": "Protected" },
+                        "completionEvents": []
+                    }
+                ]
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
