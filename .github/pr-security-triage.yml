@@ -1,0 +1,51 @@
+name: PR & Security Triage
+
+on:
+  # Run every Monday and Friday at 9am UTC
+  schedule:
+    - cron: '0 9 * * 1'
+    - cron: '0 9 * * 5'
+
+  # Run when a PR is opened, updated, or re-opened
+  # pull_request_target runs with base-branch context so secrets are available,
+  # even for PRs from forks (e.g. Dependabot). The script always checks out
+  # main — it never executes code from the PR branch.
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: write       # needed to merge PRs
+  pull-requests: write  # needed to post PR comments
+  issues: write         # needed to create security tracking issues
+  security-events: read # needed to read Dependabot alerts
+
+jobs:
+  triage:
+    name: AI Triage
+    runs-on: ubuntu-latest
+
+    # Don't run bot-on-bot loops for actions triggered by github-actions itself,
+    # unless it's a scheduled run.
+    if: |
+      github.actor != 'github-actions[bot]' ||
+      github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          # Always check out the default branch — never the PR branch.
+          # This prevents untrusted code from running in a privileged context.
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run triage script
+        env:
+          GITHUB_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_NUMBER:     ${{ github.event.pull_request.number }}
+        run: node .github/scripts/pr-security-triage.js
