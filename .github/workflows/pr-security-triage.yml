@@ -34,7 +34,7 @@ jobs:
       - name: Fetch triage script
         run: |
           curl -fsSL \
-            https://raw.githubusercontent.com/Sonofg0tham/PartnerPass/main/scripts/pr-security-triage.js \
+            https://raw.githubusercontent.com/Sonofg0tham/workflow-scripts/main/scripts/pr-security-triage.js \
             -o /tmp/pr-security-triage.js
 
       - name: Run triage
