@@ -1,0 +1,4 @@
+## 2024-05-24 - [CRITICAL] Webview Arbitrary Command Execution
+**Vulnerability:** The VS Code webview `onDidReceiveMessage` handler in `SidebarProvider.ts` directly executed `data.command` via `vscode.commands.executeCommand()` without any validation. If an attacker could inject malicious JavaScript into the webview (e.g. via XSS in an unescaped file path), they could execute arbitrary VS Code commands.
+**Learning:** All messages received from webviews must be treated as untrusted input. Just because the webview is internal does not mean it's safe from XSS.
+**Prevention:** Strictly validate or whitelist command strings before passing them to `vscode.commands.executeCommand` (e.g., checking `typeof command === 'string' && command.startsWith('quell.')`).
