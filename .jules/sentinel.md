@@ -1,0 +1,4 @@
+## 2024-05-18 - Prevent arbitrary command execution in Webview
+**Vulnerability:** The `onDidReceiveMessage` handler in `src/SidebarProvider.ts` passed the unvalidated command string `data.command` directly to `vscode.commands.executeCommand`. This could allow a malicious webview to execute arbitrary VS Code commands.
+**Learning:** Webviews must be treated as untrusted boundaries. Passing user-controlled strings directly to privileged APIs like `executeCommand` without validation creates a significant injection risk.
+**Prevention:** Always strictly validate or whitelist command strings originating from webviews before execution. For Quell, verifying that the command starts with the `quell.` prefix mitigates this risk by ensuring only intended extension commands can be triggered.
