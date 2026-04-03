@@ -1,0 +1,4 @@
+## 2025-05-15 - Arbitrary Command Execution via Webview
+**Vulnerability:** The webview handler in `SidebarProvider.ts` executes whatever command is sent via `postMessage({type: 'action', command: ...})` without validating if the command is authorized.
+**Learning:** This is an arbitrary command execution vulnerability. Webviews run in a less trusted context. If an attacker injects malicious content (like through an unescaped file path triggering XSS or if the CSP is bypassed), they could send a message to execute arbitrary VS Code commands (e.g. `workbench.action.terminal.new` followed by terminal commands, or file deletion).
+**Prevention:** Strictly validate or whitelist command strings in `onDidReceiveMessage` before passing them to `vscode.commands.executeCommand`. Since legitimate extension commands are prefixed with `quell.`, enforcing that commands start with `quell.` blocks execution of standard VS Code workbench commands.
