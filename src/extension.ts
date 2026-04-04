@@ -245,9 +245,10 @@ export function activate(context: vscode.ExtensionContext) {
             for (const placeholder of uniqueMatches) {
                 const realValue = await context.secrets.get(placeholder);
                 if (realValue) {
-                    const count = restoredText.split(placeholder).length - 1;
+                    const parts = restoredText.split(placeholder);
+                    const count = parts.length - 1;
                     if (count > 0) {
-                        restoredText = restoredText.split(placeholder).join(realValue);
+                        restoredText = parts.join(realValue);
                         restoredCount += count;
                     }
                 }

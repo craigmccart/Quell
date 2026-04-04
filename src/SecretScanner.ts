@@ -169,6 +169,10 @@ export class SecretScanner {
             regex: new RegExp(p.regex.source, p.regex.flags.includes('g') ? p.regex.flags : p.regex.flags + 'g'),
         }));
 
+    // Caches to prevent recompiling config-driven RegExp objects repeatedly in hot paths
+    private static readonly WHITELIST_CACHE = new WeakMap<string[], RegExp[]>();
+    private static readonly CUSTOM_PATTERNS_CACHE = new WeakMap<Array<{ name: string; regex: string }>, Array<{ name: string; regex: RegExp }>>();
+
     // ═════════════════════════════════════════
     //  Public API
     // ═════════════════════════════════════════
@@ -183,33 +187,32 @@ export class SecretScanner {
     public static redact(text: string, config: ScannerConfig = DEFAULT_CONFIG): RedactResult {
         let redactedText = text;
         const secrets = new Map<string, string>();
+        const valueToPlaceholder = new Map<string, string>(); // Reverse-lookup map for O(1) checks
         const detectedTypes = new Set<string>();
 
-        // Build whitelist regex set
-        const whitelistRegexps = config.whitelistPatterns
-            .map((p) => { try { return new RegExp(p); } catch { return null; } })
-            .filter((r): r is RegExp => r !== null);
+        // Cache and retrieve whitelist RegExp array based on the array reference in config
+        let whitelistRegexps = this.WHITELIST_CACHE.get(config.whitelistPatterns);
+        if (!whitelistRegexps) {
+            whitelistRegexps = config.whitelistPatterns
+                .map((p) => { try { return new RegExp(p); } catch { return null; } })
+                .filter((r): r is RegExp => r !== null);
+            this.WHITELIST_CACHE.set(config.whitelistPatterns, whitelistRegexps);
+        }
 
         const isWhitelisted = (value: string): boolean => {
-            return whitelistRegexps.some((re) => re.test(value));
+            return whitelistRegexps!.some((re) => re.test(value));
         };
 
         const replaceSecret = (secretValue: string, typeName: string): void => {
             if (isWhitelisted(secretValue)) { return; }
 
-            // Check if this exact secret value was already captured
-            let placeholder = '';
-            for (const [key, value] of secrets.entries()) {
-                if (value === secretValue) {
-                    placeholder = key;
-                    break;
-                }
-            }
+            let placeholder = valueToPlaceholder.get(secretValue);
 
             if (!placeholder) {
                 const uuid = crypto.randomUUID().replace(/-/g, '').substring(0, 12);
                 placeholder = `{{SECRET_${uuid}}}`;
                 secrets.set(placeholder, secretValue);
+                valueToPlaceholder.set(secretValue, placeholder);
                 detectedTypes.add(typeName);
             }
 
@@ -227,16 +230,25 @@ export class SecretScanner {
         }
 
         // ── Step 2: User-defined Custom Patterns ──
-        for (const custom of config.customPatterns) {
-            try {
-                const customRegex = new RegExp(custom.regex, 'g');
-                const matches = text.match(customRegex);
-                if (matches) {
-                    const uniqueMatches = [...new Set(matches)];
-                    uniqueMatches.forEach((match) => replaceSecret(match, custom.name));
-                }
-            } catch {
-                // Silently skip invalid user-defined patterns
+        let customPatterns = this.CUSTOM_PATTERNS_CACHE.get(config.customPatterns);
+        if (!customPatterns) {
+            customPatterns = config.customPatterns
+                .map((custom) => {
+                    try {
+                        return { name: custom.name, regex: new RegExp(custom.regex, 'g') };
+                    } catch {
+                        return null; // Silently skip invalid user-defined patterns
+                    }
+                })
+                .filter((r): r is { name: string; regex: RegExp } => r !== null);
+            this.CUSTOM_PATTERNS_CACHE.set(config.customPatterns, customPatterns);
+        }
+
+        for (const custom of customPatterns) {
+            const matches = text.match(custom.regex);
+            if (matches) {
+                const uniqueMatches = [...new Set(matches)];
+                uniqueMatches.forEach((match) => replaceSecret(match, custom.name));
             }
         }
 
