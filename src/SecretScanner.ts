@@ -213,8 +213,8 @@ export class SecretScanner {
                 detectedTypes.add(typeName);
             }
 
-            // Use split/join for global replacement (safe for special regex chars in secrets)
-            redactedText = redactedText.split(secretValue).join(placeholder);
+            // Use replaceAll for global replacement (faster and more memory-efficient than split/join)
+            redactedText = redactedText.replaceAll(secretValue, placeholder);
         };
 
         // ── Step 1: Built-in Regex Patterns ──
