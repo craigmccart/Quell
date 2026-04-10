@@ -1,3 +1,6 @@
 ## 2024-05-24 - Parallelize I/O-bound tasks in workspace scans
 **Learning:** Sequential `for` loops reading files block the event loop and increase latency for workspace scanning tasks. Since file reading and secret scanning don't depend on sequential execution order, they can be processed concurrently.
 **Action:** Parallelize I/O-bound tasks in workspace scans (like file reading and secret scanning) using `Promise.all` with `.map()` instead of sequential `for` loops to significantly reduce execution time.
+## 2024-05-24 - Safely replacing split().join() with replaceAll()
+**Learning:** Using `String.prototype.replaceAll(search, replacementString)` as a drop-in replacement for `split(search).join(replacementString)` is unsafe if the replacement string is arbitrary. `replaceAll` will interpolate special patterns (like `$&`, `$1`) in the replacement string, which can corrupt data (e.g. passwords or tokens containing `$`).
+**Action:** When replacing `split().join()` for performance, pass the replacement string as a callback function: `replaceAll(search, () => replacementString)` to safely mimic literal replacement behavior. Also, when you need the occurrence count, use `.split()` and `.join()` directly and cache the array to avoid repeated array allocations.
