@@ -5,3 +5,7 @@
 ## 2024-05-15 - Stateful Toggle Button Accessibility in Webviews
 **Learning:** Toggle buttons (like "AI Indexing Shield") visually indicated their state via CSS classes (`.on`/`.off`) and text ("ON"/"OFF"), but lacked semantic `aria-pressed` states for screen readers. Furthermore, while primary buttons (`.btn-cta`, `.btn-tool`) had `:focus-visible` styles for keyboard navigation, the smaller `.toggle-btn` elements did not, making keyboard tabbing invisible.
 **Action:** Always ensure custom toggle buttons include dynamic `aria-pressed="true|false"` attributes and that ALL interactive elements receive explicit `:focus-visible` styling to support keyboard navigation in custom VS Code webviews.
+
+## 2024-05-16 - Connecting Descriptive Text to Toggle Buttons in Webviews
+**Learning:** Toggle buttons with descriptive text underneath them (like the AI Shield or Clipboard Auto-Sanitize descriptions) lacked a semantic connection. Screen readers would read the button label but miss the context provided by the adjacent description text.
+**Action:** Always link toggle buttons or custom interactive elements to their corresponding descriptive text using the `aria-describedby` attribute pointing to the ID of the descriptive text element. This ensures complete context is provided to screen reader users in VS Code webviews.

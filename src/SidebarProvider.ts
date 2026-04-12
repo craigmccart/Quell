@@ -714,10 +714,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         </div>
                         <button class="toggle-btn ${this._aiShieldActive ? 'on' : 'off'}"
                             aria-pressed="${this._aiShieldActive ? 'true' : 'false'}"
+                            aria-describedby="ai-shield-desc"
                             title="${this._aiShieldActive ? 'Disable AI Indexing Shield' : 'Enable AI Indexing Shield'}"
                             onclick="vscode.postMessage({type:'action', command:'${shieldCmd}'})">${shieldLabel}</button>
                     </div>
-                    <div class="shield-desc">${shieldDesc}</div>
+                    <div class="shield-desc" id="ai-shield-desc">${shieldDesc}</div>
                 </div>
 
                 <!-- ── Clipboard Auto-Sanitize card ────── -->
@@ -729,10 +730,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         </div>
                         <button class="toggle-btn ${autoSanitizeEnabled ? 'on' : 'off'}"
                             aria-pressed="${autoSanitizeEnabled ? 'true' : 'false'}"
+                            aria-describedby="auto-sanitize-desc"
                             title="${autoSanitizeEnabled ? 'Disable Clipboard Auto-Sanitize' : 'Enable Clipboard Auto-Sanitize'}"
                             onclick="vscode.postMessage({type:'action', command:'quell.toggleAutoSanitize'})">${autoSanitizeEnabled ? 'ON' : 'OFF'}</button>
                     </div>
-                    <div class="shield-desc">${autoSanitizeEnabled ? 'Actively securing copied secrets.' : 'Warns only when secrets are copied.'}</div>
+                    <div class="shield-desc" id="auto-sanitize-desc">${autoSanitizeEnabled ? 'Actively securing copied secrets.' : 'Warns only when secrets are copied.'}</div>
                 </div>
 
                 <div class="section-divider"></div>
