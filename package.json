@@ -40,7 +40,7 @@
     "activationEvents": [
         "onStartupFinished"
     ],
-    "main": "./out/extension.js",
+    "main": "./out/src/extension.js",
     "contributes": {
         "viewsContainers": {
             "activitybar": [
@@ -327,7 +327,7 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
-        "test": "tsc -p ./tsconfig.test.json && node out/test/SecretScanner.test.js"
+        "test": "tsc -p ./tsconfig.test.json && node out/packages/scanner/src/test/SecretScanner.test.js"
     },
     "devDependencies": {
         "@types/vscode": "^1.110.0",

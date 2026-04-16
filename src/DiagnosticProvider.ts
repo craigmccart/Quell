@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { SecretScanner, ScannerConfig, DEFAULT_CONFIG } from './SecretScanner';
+import { SecretScanner, ScannerConfig, DEFAULT_CONFIG } from '../packages/scanner/src';
 
 export class DiagnosticProvider implements vscode.CodeActionProvider {
     private static collection: vscode.DiagnosticCollection;

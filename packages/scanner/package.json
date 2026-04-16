@@ -1,0 +1,41 @@
+{
+  "name": "@quell/scanner",
+  "version": "0.1.0",
+  "description": "Offline secret-detection engine. Regex patterns plus Shannon entropy. Zero runtime dependencies. The core scanner behind the Quell VSCode extension.",
+  "keywords": [
+    "security",
+    "secrets",
+    "secret-scanner",
+    "api-keys",
+    "redaction",
+    "entropy",
+    "appsec",
+    "devsecops"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p ./",
+    "test": "tsc -p ./tsconfig.test.json && node dist-test/test/SecretScanner.test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sonofg0tham/Quell.git",
+    "directory": "packages/scanner"
+  },
+  "license": "MIT",
+  "author": "Craig McCart",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "typescript": "^5.3.3"
+  }
+}

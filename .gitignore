@@ -4,6 +4,15 @@ out
 *.vsix
 .DS_Store
 
+# Scanner package build outputs
+packages/scanner/dist
+packages/scanner/dist-test
+packages/scanner/node_modules
+
+# Editor/IDE local settings (per-user, not shared)
+.claude/settings.local.json
+.claude/settings.json
+
 # Environment files — NEVER commit secrets!
 .env
 .env.*

@@ -1,0 +1,13 @@
+# Normalise line endings to LF in the repo.
+# Working-tree line endings are left to core.autocrlf on each contributor's machine.
+* text=auto eol=lf
+
+# Binary files - never touch these
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+*.vsix binary
+*.pdf binary

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { SecretScanner } from './SecretScanner';
+import { SecretScanner } from '../packages/scanner/src';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
     private _view?: vscode.WebviewView;

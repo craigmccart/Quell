@@ -8,15 +8,22 @@
         ],
         "sourceMap": true,
         "strict": true,
-        "rootDir": "src",
+        "rootDir": ".",
         "moduleResolution": "node",
         "esModuleInterop": true,
         "skipLibCheck": true
     },
+    "include": [
+        "src/**/*.ts",
+        "packages/scanner/src/**/*.ts"
+    ],
     "exclude": [
         "node_modules",
         ".vscode-test",
         "src/test/**",
+        "packages/scanner/src/test/**",
+        "packages/scanner/dist/**",
+        "packages/scanner/dist-test/**",
         "playground/**"
     ]
 }
