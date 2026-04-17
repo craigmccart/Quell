@@ -859,11 +859,17 @@ export function activate(context: vscode.ExtensionContext) {
         const doc = await vscode.workspace.openTextDocument({
             language: 'plaintext',
             content: [
-                '# Quell Demo — these are fake, officially-published test credentials',
-                '# Try the Quick Fix lightbulb (or press Ctrl+.) on the line below',
+                '# Quell Demo — fake credentials for testing (safe to share)',
+                '# Watch the yellow squiggles appear, then press Ctrl+. for Quick Fix',
                 '',
-                'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE',
-                'AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+                '# GitHub Personal Access Token (fake)',
+                'GITHUB_TOKEN=ghp_ABCDEFabcdef1234567890abcdef123456',
+                '',
+                '# PostgreSQL connection string (fake)',
+                'DATABASE_URL=postgresql://admin:S3cr3tP4ssw0rd@db.example.com:5432/myapp',
+                '',
+                '# OpenAI Project Key (fake)',
+                'OPENAI_API_KEY=sk-proj-ABCDEFabcdef1234567890ABCDEFabcdef1234567890ab',
             ].join('\n'),
         });
         await vscode.window.showTextDocument(doc);

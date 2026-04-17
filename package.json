@@ -306,7 +306,7 @@
                     {
                         "id": "quell.demo",
                         "title": "See it catch a secret",
-                        "description": "Click below to open a demo file with a fake AWS key. Watch Quell flag it in real time — then use the Quick Fix lightbulb (or Ctrl+.) to redact it.\n\n[Open demo file](command:quell.openDemo)",
+                        "description": "Click below to open a demo file with fake GitHub, database, and OpenAI credentials. Watch the yellow squiggles appear — then use the Quick Fix lightbulb (or Ctrl+.) to redact them.\n\n[Open demo file](command:quell.openDemo)",
                         "media": { "svg": "assets/quell-sidebar.svg", "altText": "Quell demo" },
                         "completionEvents": ["onCommand:quell.redactActiveFile"]
                     },
