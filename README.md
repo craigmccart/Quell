@@ -113,6 +113,7 @@ Get notified when saving a file that still contains raw secrets — with a one-c
 | `quell.showInlineDecorations` | `true` | Show inline decorations for placeholders |
 | `quell.confirmBeforeRedact` | `false` | Confirmation dialog before file redaction |
 | `quell.autoSanitizeClipboard` | `false` | Auto-replace clipboard secrets with placeholders |
+| `quell.redactTestKeys` | `false` | Redact officially-published test credentials (e.g. `AKIAIOSFODNN7EXAMPLE`) |
 
 ---
 
@@ -127,6 +128,7 @@ Get notified when saving a file that still contains raw secrets — with a one-c
 | Restore Secrets | — | Restore placeholders from Keychain |
 | Scan Workspace | — | Full workspace secret audit |
 | Show Log | — | Open the Quell output panel |
+| Clear Vault | — | Delete all stored secrets from the OS Keychain |
 
 ---
 
