@@ -10,6 +10,8 @@ export interface ScannerConfig {
     minimumTokenLength: number;
     customPatterns: Array<{ name: string; regex: string }>;
     whitelistPatterns: string[];
+    /** When true, officially-published test/demo credentials (e.g. AKIAIOSFODNN7EXAMPLE) are redacted like any other secret. When false (default), they are treated as safe example values and left in place. */
+    redactTestKeys: boolean;
 }
 
 export const DEFAULT_CONFIG: ScannerConfig = {
@@ -18,6 +20,7 @@ export const DEFAULT_CONFIG: ScannerConfig = {
     minimumTokenLength: 20,
     customPatterns: [],
     whitelistPatterns: [],
+    redactTestKeys: false,
 };
 
 export interface RedactResult {
@@ -203,6 +206,17 @@ export class SecretScanner {
             'your_api_key', 'your_api_key_here', 'your_token', 'your_token_here',
         ]);
 
+        // Officially-published test/demo credentials. Safe to include in READMEs and
+        // examples. Skipped unless config.redactTestKeys is true.
+        const TEST_CREDENTIALS = new Set([
+            'AKIAIOSFODNN7EXAMPLE',                          // AWS Access Key ID
+            'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',    // AWS Secret Access Key
+            'ASIAIOSFODNN7EXAMPLE',                          // AWS STS key
+            'sk-ant-api03-EXAMPLE',                          // Anthropic (pattern prefix)
+            'ghp_EXAMPLE',                                   // GitHub PAT prefix
+            'glpat-EXAMPLE',                                 // GitLab PAT prefix
+        ]);
+
         const isPlaceholderAssignment = (typeName: string, match: string): boolean => {
             if (typeName !== 'Password in Assignment' && typeName !== 'Token in Assignment') {
                 return false;
@@ -213,9 +227,15 @@ export class SecretScanner {
             return PLACEHOLDER_VALUES.has(m[1].toLowerCase());
         };
 
+        const isTestCredential = (secretValue: string): boolean => {
+            if (config.redactTestKeys) { return false; }
+            return TEST_CREDENTIALS.has(secretValue);
+        };
+
         const replaceSecret = (secretValue: string, typeName: string): void => {
             if (isWhitelisted(secretValue)) { return; }
             if (isPlaceholderAssignment(typeName, secretValue)) { return; }
+            if (isTestCredential(secretValue)) { return; }
 
             // Check if this exact secret value was already captured
             let placeholder = '';
@@ -227,7 +247,7 @@ export class SecretScanner {
             }
 
             if (!placeholder) {
-                const uuid = crypto.randomUUID().replace(/-/g, '').substring(0, 12);
+                const uuid = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
                 placeholder = `{{SECRET_${uuid}}}`;
                 secrets.set(placeholder, secretValue);
                 detectedTypes.add(typeName);

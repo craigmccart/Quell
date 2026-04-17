@@ -67,7 +67,7 @@ console.log('\n🛡️  Quell SecretScanner Tests\n');
 console.log('☁️  AWS Patterns:');
 
 test('detects AWS Access Key ID (AKIA)', () => {
-    assertSecretDetected('my key is AKIAIOSFODNN7EXAMPLE', 'AWS Access Key ID');
+    assertSecretDetected('my key is AKIAIOSFODNN7EXAMPLE', 'AWS Access Key ID', { ...DEFAULT_CONFIG, redactTestKeys: true });
 });
 
 test('detects AWS Access Key ID (ASIA)', () => {
@@ -387,6 +387,15 @@ test('respects whitelist patterns', () => {
     assert.strictEqual(result.secrets.size, 0, 'Whitelisted pattern should not be flagged');
 });
 
+test('does NOT redact official test credentials by default (redactTestKeys=false)', () => {
+    const result = SecretScanner.redact('my key is AKIAIOSFODNN7EXAMPLE', DEFAULT_CONFIG);
+    assert.strictEqual(result.secrets.size, 0, 'Official test credential should not be flagged by default');
+});
+
+test('redacts official test credentials when redactTestKeys=true', () => {
+    assertSecretDetected('my key is AKIAIOSFODNN7EXAMPLE', 'AWS Access Key ID', { ...DEFAULT_CONFIG, redactTestKeys: true });
+});
+
 
 // ── Placeholder Mechanics ────────────
 console.log('\n🏷️  Placeholder Mechanics:');
@@ -407,7 +416,7 @@ test('reuses placeholder for duplicate secrets', () => {
 test('placeholder format is correct', () => {
     const result = SecretScanner.redact('ghp_ABCDEFabcdef1234567890abcdef123456');
     const placeholder = Array.from(result.secrets.keys())[0];
-    assert.ok(/^{{SECRET_[a-z0-9]{12}}}$/.test(placeholder), `Placeholder "${placeholder}" does not match expected format`);
+    assert.ok(/^{{SECRET_[a-z0-9]{16}}}$/.test(placeholder), `Placeholder "${placeholder}" does not match expected format`);
 });
 
 test('redacted text contains placeholder, not original', () => {

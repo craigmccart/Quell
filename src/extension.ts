@@ -36,9 +36,27 @@ function getConfig(): ScannerConfig {
         minimumTokenLength: cfg.get<number>('minimumTokenLength', DEFAULT_CONFIG.minimumTokenLength),
         customPatterns,
         whitelistPatterns: cfg.get<string[]>('whitelistPatterns', DEFAULT_CONFIG.whitelistPatterns),
+        redactTestKeys: cfg.get<boolean>('redactTestKeys', DEFAULT_CONFIG.redactTestKeys),
     };
 }
 
+// ─────────────────────────────────────────────────────
+//  VaultIndex helpers  (globalState-backed enumeration for SecretStorage,
+//  which has no native list/iterate API)
+// ─────────────────────────────────────────────────────
+const VAULT_INDEX_KEY = 'quell.vaultIndex';
+
+async function vaultIndexAdd(context: vscode.ExtensionContext, placeholder: string): Promise<void> {
+    const index: string[] = context.globalState.get<string[]>(VAULT_INDEX_KEY, []);
+    if (!index.includes(placeholder)) {
+        index.push(placeholder);
+        await context.globalState.update(VAULT_INDEX_KEY, index);
+    }
+}
+
+async function vaultIndexClear(context: vscode.ExtensionContext): Promise<void> {
+    await context.globalState.update(VAULT_INDEX_KEY, []);
+}
 
 // ═════════════════════════════════════════════════════
 //  Activation
@@ -171,6 +189,7 @@ export function activate(context: vscode.ExtensionContext) {
                 // Store each secret securely in OS Keychain via VS Code SecretStorage
                 for (const [placeholder, secretValue] of secrets) {
                     await context.secrets.store(placeholder, secretValue);
+                    await vaultIndexAdd(context, placeholder);
                 }
 
                 const typesList = Array.from(detectedTypes).join(', ');
@@ -316,6 +335,7 @@ export function activate(context: vscode.ExtensionContext) {
         // Store secrets securely
         for (const [placeholder, secretValue] of secrets) {
             await context.secrets.store(placeholder, secretValue);
+            await vaultIndexAdd(context, placeholder);
         }
 
         // Apply redaction to the editor
@@ -370,6 +390,7 @@ export function activate(context: vscode.ExtensionContext) {
         // Store & replace
         for (const [placeholder, secretValue] of secrets) {
             await context.secrets.store(placeholder, secretValue);
+            await vaultIndexAdd(context, placeholder);
         }
 
         await editor.edit((editBuilder) => editBuilder.replace(selection, redactedText));
@@ -571,6 +592,7 @@ export function activate(context: vscode.ExtensionContext) {
             // Store secrets in keychain
             for (const [placeholder, secretValue] of secrets) {
                 await context.secrets.store(placeholder, secretValue);
+                await vaultIndexAdd(context, placeholder);
             }
 
             // Paste the sanitized version
@@ -632,6 +654,7 @@ export function activate(context: vscode.ExtensionContext) {
             // Store secrets in keychain for later restore
             for (const [placeholder, secretValue] of secrets) {
                 await context.secrets.store(placeholder, secretValue);
+                await vaultIndexAdd(context, placeholder);
             }
 
             await vscode.env.clipboard.writeText(redactedText);
@@ -716,6 +739,7 @@ export function activate(context: vscode.ExtensionContext) {
                     // Auto-Sanitize: Overwrite clipboard with safe placeholders
                     for (const [placeholder, secretValue] of secrets) {
                         await context.secrets.store(placeholder, secretValue);
+                        await vaultIndexAdd(context, placeholder);
                     }
                     await vscode.env.clipboard.writeText(redactedText);
                     lastClipboardText = redactedText; // prevent infinite loop
@@ -793,9 +817,10 @@ export function activate(context: vscode.ExtensionContext) {
             const doc = await vscode.workspace.openTextDocument(uri);
             if (doc.getText(range) !== secretValue) { return; }
 
-            const uuid = crypto.randomUUID().replace(/-/g, '').substring(0, 12);
+            const uuid = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
             const placeholder = `{{SECRET_${uuid}}}`;
             await context.secrets.store(placeholder, secretValue);
+            await vaultIndexAdd(context, placeholder);
 
             const edit = new vscode.WorkspaceEdit();
             edit.replace(uri, range, placeholder);
@@ -845,6 +870,30 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     // ─────────────────────────────────────────
+    // 21. Command: Clear Vault
+    // ─────────────────────────────────────────
+    const clearVaultCmd = vscode.commands.registerCommand('quell.clearVault', async () => {
+        const index: string[] = context.globalState.get<string[]>(VAULT_INDEX_KEY, []);
+        if (index.length === 0) {
+            vscode.window.showInformationMessage('🛡️ Quell: Vault is already empty.');
+            return;
+        }
+        const answer = await vscode.window.showWarningMessage(
+            `🛡️ Quell: This will permanently delete ${index.length} stored secret(s) from the keychain. The placeholders in your files will remain but can no longer be restored. Continue?`,
+            { modal: true },
+            'Delete all secrets'
+        );
+        if (answer !== 'Delete all secrets') { return; }
+        for (const ph of index) {
+            await context.secrets.delete(ph);
+        }
+        await vaultIndexClear(context);
+        Logger.info(`Vault cleared — deleted ${index.length} secret(s).`);
+        vscode.window.showInformationMessage(`🛡️ Quell: Vault cleared. ${index.length} secret(s) removed.`);
+        sidebarProvider.refresh();
+    });
+
+    // ─────────────────────────────────────────
     // 13. Register all subscriptions
     // ─────────────────────────────────────────
     context.subscriptions.push(
@@ -863,7 +912,8 @@ export function activate(context: vscode.ExtensionContext) {
         openFileCmd,
         toggleAutoSanitizeCmd,
         redactSingleSecretCmd,
-        openDemoCmd
+        openDemoCmd,
+        clearVaultCmd
     );
 
 
