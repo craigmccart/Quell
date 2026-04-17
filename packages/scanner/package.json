@@ -30,6 +30,9 @@
     "directory": "packages/scanner"
   },
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Craig McCart",
   "engines": {
     "node": ">=18"
