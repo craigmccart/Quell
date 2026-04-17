@@ -41,8 +41,8 @@ Every time you paste code into an AI chat (Copilot, Cursor, Windsurf, Antigravit
 - DATABASE_URL=postgres://admin:YOUR_PASSWORD@db.example.com:5432/mydb
 
 # After Quell (SAFE)
-+ STRIPE_KEY={{SECRET_52c14bbbc02e}}
-+ DATABASE_URL={{SECRET_f6d2e5e49c86}}
++ STRIPE_KEY={{SECRET_52c14bbbc02ef7a1}}
++ DATABASE_URL={{SECRET_f6d2e5e49c86a3b2}}
 + AWS_REGION=us-east-1  ← non-secret, left unchanged
 ```
 

@@ -2,6 +2,21 @@
 
 All notable changes to Quell will be documented in this file.
 
+## [2.5.0] - 2026-04-17
+
+### 🛡️ Vault Management
+- **Clear Vault command** — `Quell: Clear Vault (delete all stored secrets)` permanently removes all secrets from the OS Keychain. Uses a `globalState`-backed index (since VSCode SecretStorage has no enumeration API) to track which placeholders have been stored. Includes a modal confirmation before deleting.
+
+### ⚙️ Test Key Filtering
+- **`quell.redactTestKeys` setting** (default: `false`) — officially-published test/demo credentials (e.g. `AKIAIOSFODNN7EXAMPLE`) are now left alone by default, since they are intentionally safe and appear in READMEs and tutorials. Set to `true` to redact them like any other secret.
+
+### 🔒 Security Hygiene
+- **Placeholder length increased** — `{{SECRET_...}}` identifiers now use 16 hex characters (up from 12) for better collision resistance across large vaults.
+- **CodeQL CI** — GitHub Actions workflow added: CodeQL security scan runs on every push/PR to `main` and weekly. Uses `security-extended` + `security-and-quality` query suites. The security tool now scans itself.
+
+### 📋 Contribution scaffolding
+- Added `CONTRIBUTING.md`, issue templates (bug, feature, pattern suggestion), and security advisory redirect.
+
 ## [2.4.0] - 2026-03-22
 
 ### 🎓 Native Onboarding Walkthrough
