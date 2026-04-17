@@ -1,0 +1,64 @@
+name: New secret pattern
+description: Suggest a new provider / token type for Quell to detect.
+title: "[Pattern] "
+labels: ["pattern", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping Quell catch more secrets. Fill in as much as you can - even partial info is useful.
+        **Do not paste a real secret.** Use a fake one (search the provider's docs for their "example" key, or make one up with the right shape and clearly mark it fake).
+  - type: input
+    id: provider
+    attributes:
+      label: Provider / service
+      description: The company or tool that issues this type of secret.
+      placeholder: "e.g. Cloudflare, Linear, Datadog"
+    validations:
+      required: true
+  - type: input
+    id: key-type
+    attributes:
+      label: Key or token type
+      description: The specific credential variant. Some providers have several.
+      placeholder: "e.g. API Token, Personal Access Token, Webhook Secret"
+    validations:
+      required: true
+  - type: textarea
+    id: format
+    attributes:
+      label: Format / shape
+      description: What does this secret look like? Prefix, length, character set?
+      placeholder: "Starts with `cf_`, followed by 40 lowercase alphanumeric characters."
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Fake example value
+      description: A synthetic value in the right shape. Do NOT post a real one.
+      placeholder: "cf_0000000000000000000000000000000000000000"
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: docs-link
+    attributes:
+      label: Link to provider docs
+      description: Where is this key format documented?
+      placeholder: "https://..."
+  - type: textarea
+    id: regex
+    attributes:
+      label: Suggested regex (optional)
+      description: If you have a regex in mind, paste it here. Otherwise leave blank.
+      render: text
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-submit checklist
+      options:
+        - label: The example value above is fake, not a real credential.
+          required: true
+        - label: I have searched existing issues and patterns to avoid duplicates.
+          required: true

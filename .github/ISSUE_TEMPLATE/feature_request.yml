@@ -1,0 +1,51 @@
+name: Feature request
+description: Suggest a new capability, workflow, or improvement.
+title: "[Feature] "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. Before writing it up, have a quick look at existing issues and the roadmap in `PROJECT_STATUS.md` - your idea might already be queued.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the situation you are in when you wish Quell could do this.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would Quell do differently? A UX sketch, a command name, or a setting is fine.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered
+      description: Any workarounds you are using today, or other tools that solve this.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which surface does this touch?
+      multiple: true
+      options:
+        - Scanner / detection logic
+        - Sidebar dashboard
+        - Commands / keybindings
+        - Settings
+        - AI Shield / ignore file management
+        - Clipboard handling
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Pre-submit checklist
+      options:
+        - label: I have searched existing issues and this is not a duplicate.
+          required: true
