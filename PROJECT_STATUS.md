@@ -2,13 +2,13 @@
 
 Living tracker of where Quell is, what's landed, and what's next. Update after every session that changes state. Sits alongside `POSITIONING.md` (strategy) and `FIX_PROMPTS/` (concrete next actions).
 
-*Last updated: 2026-04-17 (round 3 complete, awaiting git commits)*
+*Last updated: 2026-04-17 (round 4 complete — 10 commits landed, pushed to main)*
 
 ## Snapshot
 
 - **Repo**: `C:\\Users\\craig\\Github Repos\\Quell`, single checkout on `main`
 - **Publisher**: `Sonofg0tham`
-- **Version on Marketplace**: v2.4.0
+- **Version on Marketplace**: v2.4.0 (v2.5.0 built and ready — awaiting .vsix publish in round 5)
 - **Licence**: MIT (stays MIT for the free tier)
 - **Adoption (as of 2026-04-09)**: OpenVSX 484 downloads / 7 installs, VSCode Marketplace 65 acquisitions in last 30 days
 - **Strategic direction**: keep generous free tier, extract `SecretScanner.ts` into `@quell/scanner` package to unlock CLI, GitHub Action, and monetisation surfaces
@@ -45,39 +45,25 @@ Committed `.gitattributes`, `POSITIONING.md`, `PROJECT_STATUS.md`, the `FIX_PROM
 ### Commit `3828ca6` - Round 2b: scanner extraction
 Moved `SecretScanner.ts` and its tests into `packages/scanner/` as `@quell/scanner` v0.1.0 (not yet published to npm). History preserved, standalone build and root build both work. Compile clean, 58/58 tests passing.
 
-## What's next (awaiting git commits)
+### Round 3 - 4 commits landed (`f77977a`..`0f1fc26`)
+- `f77977a` — CodeQL CI + contribution scaffolding
+- `1b626e6` — UUID placeholder 12→16 hex chars
+- `cd028a5` — quell.clearVault command
+- `0f1fc26` — quell.redactTestKeys setting (60/60 tests)
 
-### Round 3 - ready to commit (4 commits)
+### Round 4 - 6 commits landed (`a956e69`..`d3aa1e2`)
+- `a956e69` — Fix demo: GitHub PAT + PostgreSQL URI + OpenAI key (fires at default settings, no push-protection false positives)
+- `aa94bd2` — v2.5.0 bump, CHANGELOG entry, README UUID example updated to 16 chars
+- `74d1427` — README: redactTestKeys row in config table, Clear Vault row in commands table
+- `12021e3` — Extract getConfig() to configHelper.ts (no more config duplication)
+- `5a3fcf3` — publishConfig added to @quell/scanner package.json (public npm scoped publish)
+- `d3aa1e2` — .Jules/ renamed to .jules/ (case convention, R100 renames)
 
-All code is on disk. Compile clean, **60/60 tests passing** (2 new tests for `redactTestKeys`).
+## What's next
 
-**Commit 1: CI + contribution scaffolding**
-Files: `.github/workflows/codeql.yml` + `CONTRIBUTING.md` + `.github/ISSUE_TEMPLATE/{bug_report,feature_request,pattern_suggestion,config}.yml`
-Message: "Add CodeQL CI workflow and contribution scaffolding"
+### Round 5 - Screenshots, publish, marketplace
 
-**Commit 2: UUID 12→16 bump**
-Files: `packages/scanner/src/SecretScanner.ts` + `packages/scanner/src/test/SecretScanner.test.ts` + `src/extension.ts`
-Message: "Expand placeholder UUID from 12 to 16 hex chars"
-
-**Commit 3: quell.clearVault command**
-Files: `src/extension.ts` + `package.json`
-Message: "Add quell.clearVault command to purge stored secrets from keychain"
-Note: uses `context.globalState` under key `quell.vaultIndex` as a string[] index (since VSCode SecretStorage has no enumeration API). vaultIndexAdd called after every context.secrets.store. vaultIndexClear wipes the index after deleting each secret.
-
-**Commit 4: quell.redactTestKeys setting**
-Files: `packages/scanner/src/SecretScanner.ts` + `packages/scanner/src/test/SecretScanner.test.ts` + `src/extension.ts` + `src/DiagnosticProvider.ts` + `package.json`
-Message: "Add quell.redactTestKeys setting to skip official test credentials"
-Note: default false (test keys like AKIAIOSFODNN7EXAMPLE are left alone). Set true to treat them as real secrets. TEST_CREDENTIALS set in SecretScanner.redact(), isTestCredential() check added. 2 new tests.
-
-**After committing, push:** `git push origin main`
-
-### Round 4 - npm publish + GitHub Action
-- `npm publish --access public` from `packages/scanner/` (needs `@quell` scope setup on Craig's npm account first)
-- GitHub Action `.github/workflows/release.yml` to build + publish `.vsix` on tag push
-- Consider bumping to v2.5.0 for the round 3 user-facing changes (clearVault + redactTestKeys)
-
-### Round 5 - launch
-- README screenshots (3 images, biggest adoption quick-win)
-- `.Jules/` vs `.jules/` casing cleanup (cosmetic, can do in Claude Code directly)
-- Product Hunt / Hacker News post
-- Tweet / LinkedIn
+1. **Screenshots** (3 PNGs): sidebar dashboard, inline diagnostics, before/after redaction. Save as `assets/screenshot-sidebar.png`, `assets/screenshot-diagnostics.png`, `assets/screenshot-redaction.png`. Uncomment the three commented-out lines in README.
+2. **Publish `@quell/scanner` to npm**: run `npm run build` inside `packages/scanner/`, then `npm publish` (account must have @quell scope, `publishConfig` is already set for public access).
+3. **Build and publish `.vsix`**: `npx vsce package` in root, then `npx vsce publish` or upload via Marketplace UI. Bump marketplace version to v2.5.0.
+4. Product Hunt / HN post.
