@@ -2,6 +2,20 @@ import * as vscode from 'vscode';
 import { SecretScanner } from '../packages/scanner/src';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
+    private static readonly ALLOWED_COMMANDS = new Set([
+        'quell.openFile',
+        'quell.enableAiShield',
+        'quell.disableAiShield',
+        'quell.toggleAutoSanitize',
+        'quell.copyRedacted',
+        'quell.sanitizedPaste',
+        'quell.scanWorkspace',
+        'quell.redactActiveFile',
+        'quell.restoreSecrets',
+        'quell.showLog',
+        'quell.clearVault',
+    ]);
+
     private _view?: vscode.WebviewView;
     private sessionScans = 0;
     private sessionSecrets = 0;
@@ -25,10 +39,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         webviewView.webview.onDidReceiveMessage(data => {
             switch (data.type) {
                 case 'action':
-                    if (data.args) {
-                        vscode.commands.executeCommand(data.command, ...data.args);
+                    if (typeof data.command === 'string' && SidebarProvider.ALLOWED_COMMANDS.has(data.command)) {
+                        if (data.args) {
+                            vscode.commands.executeCommand(data.command, ...data.args);
+                        } else {
+                            vscode.commands.executeCommand(data.command);
+                        }
                     } else {
-                        vscode.commands.executeCommand(data.command);
+                        console.error('Quell: Blocked execution of unauthorized command from webview:', data.command);
                     }
                     break;
             }
@@ -714,10 +732,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         </div>
                         <button class="toggle-btn ${this._aiShieldActive ? 'on' : 'off'}"
                             aria-pressed="${this._aiShieldActive ? 'true' : 'false'}"
+                            aria-describedby="ai-shield-desc"
                             title="${this._aiShieldActive ? 'Disable AI Indexing Shield' : 'Enable AI Indexing Shield'}"
                             onclick="vscode.postMessage({type:'action', command:'${shieldCmd}'})">${shieldLabel}</button>
                     </div>
-                    <div class="shield-desc">${shieldDesc}</div>
+                    <div class="shield-desc" id="ai-shield-desc">${shieldDesc}</div>
                 </div>
 
                 <!-- ── Clipboard Auto-Sanitize card ────── -->
@@ -729,10 +748,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         </div>
                         <button class="toggle-btn ${autoSanitizeEnabled ? 'on' : 'off'}"
                             aria-pressed="${autoSanitizeEnabled ? 'true' : 'false'}"
+                            aria-describedby="auto-sanitize-desc"
                             title="${autoSanitizeEnabled ? 'Disable Clipboard Auto-Sanitize' : 'Enable Clipboard Auto-Sanitize'}"
                             onclick="vscode.postMessage({type:'action', command:'quell.toggleAutoSanitize'})">${autoSanitizeEnabled ? 'ON' : 'OFF'}</button>
                     </div>
-                    <div class="shield-desc">${autoSanitizeEnabled ? 'Actively securing copied secrets.' : 'Warns only when secrets are copied.'}</div>
+                    <div class="shield-desc" id="auto-sanitize-desc">${autoSanitizeEnabled ? 'Actively securing copied secrets.' : 'Warns only when secrets are copied.'}</div>
                 </div>
 
                 <div class="section-divider"></div>
