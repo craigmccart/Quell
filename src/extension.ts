@@ -478,7 +478,7 @@ export function activate(context: vscode.ExtensionContext) {
                 md.appendMarkdown('This value has been redacted and stored in your **OS Keychain**.\n\n');
                 md.appendMarkdown('| | |\n|---|---|\n');
                 md.appendMarkdown('| **Status** | 🔒 Encrypted in vault |\n');
-                md.appendMarkdown('| **Scope** | This VS Code session |\n\n');
+                md.appendMarkdown('| **Scope** | Persisted in OS Keychain |\n\n');
                 md.appendMarkdown('[$(key) Restore Secrets](command:quell.restoreSecrets "Restore all secrets in this file")');
                 return new vscode.Hover(md, range);
             }
