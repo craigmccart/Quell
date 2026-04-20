@@ -17,6 +17,18 @@ All notable changes to Quell will be documented in this file.
 ### 📋 Contribution scaffolding
 - Added `CONTRIBUTING.md`, issue templates (bug, feature, pattern suggestion), and security advisory redirect.
 
+### 🔐 Security
+- **Webview command allowlist** — the sidebar webview now validates every `executeCommand` message against an explicit `ALLOWED_COMMANDS` set. Previously any webview message could trigger arbitrary VSCode commands; now only the 11 permitted Quell commands are accepted. Eliminates a webview RCE vector.
+
+### ⚡ Performance
+- **O(1) duplicate-secret deduplication** — `SecretScanner.redact()` previously used `string.split().join()` and a linear `Map.has()` scan to deduplicate secrets. Now uses a reverse `valueToPlaceholder` Map for O(1) lookup and `String.replaceAll()` with a callback, improving performance on large files with repeated secrets.
+
+### ♿ Accessibility
+- **ARIA descriptions on toggle buttons** — the AI Shield and Auto-Sanitize toggle buttons in the sidebar now carry `aria-describedby` attributes pointing to descriptive hint text, improving screen reader experience.
+
+### 📦 Dependencies
+- `@types/vscode` bumped from `^1.90.0` to `^1.115.0` — picks up 25 releases of API type definitions.
+
 ## [2.4.0] - 2026-03-22
 
 ### 🎓 Native Onboarding Walkthrough
