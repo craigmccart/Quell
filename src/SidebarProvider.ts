@@ -508,6 +508,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                 .btn-tool:hover svg { transform: rotate(-5deg) scale(1.1); filter: drop-shadow(0 0 4px var(--accent)); }
                 .btn-tool:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
                 .btn-tool span { overflow: hidden; text-overflow: ellipsis; }
+                .btn-tool.danger { color: var(--rose); border-color: rgba(251,113,133,0.25); }
+                .btn-tool.danger svg { color: var(--rose); }
+                .btn-tool.danger:hover { border-color: rgba(251,113,133,0.5); box-shadow: 0 4px 12px rgba(251,113,133,0.15); }
+                .btn-tool.full-width { grid-column: 1 / -1; }
 
                 /* ── Stats row ──────────────────────── */
                 .stats-row {
@@ -791,6 +795,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                         <button class="btn-tool" title="Show Quell event log" onclick="vscode.postMessage({type:'action', command:'quell.showLog'})">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
                             <span>Show Log</span>
+                        </button>
+                        <button class="btn-tool danger full-width" title="Delete all stored secrets from the OS Keychain" onclick="vscode.postMessage({type:'action', command:'quell.clearVault'})">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
+                            <span>Clear Vault</span>
                         </button>
                     </div>
                 </div>
