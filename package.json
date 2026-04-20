@@ -147,6 +147,12 @@
                 "title": "Clear Vault (delete all stored secrets)",
                 "category": "Quell",
                 "icon": "$(trash)"
+            },
+            {
+                "command": "quell.toggleAutoSanitize",
+                "title": "Toggle Auto-Sanitize Clipboard",
+                "category": "Quell",
+                "icon": "$(clippy)"
             }
         ],
         "keybindings": [
