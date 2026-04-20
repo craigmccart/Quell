@@ -2,13 +2,13 @@
 
 Living tracker of where Quell is, what's landed, and what's next. Update after every session that changes state. Sits alongside `POSITIONING.md` (strategy) and `FIX_PROMPTS/` (concrete next actions).
 
-*Last updated: 2026-04-20 (round 5 landed, screenshot stubs in place, publish deferred to round 6)*
+*Last updated: 2026-04-20 (round 6 landed: engines fix + real screenshots; VSIX build and marketplace publish are the next manual steps)*
 
 ## Snapshot
 
 - **Repo**: `C:\\Users\\craig\\Github Repos\\Quell`, single checkout on `main`
 - **Publisher**: `Sonofg0tham`
-- **Version in repo**: v2.5.0 (marketplace still shows v2.4.0 — VSIX publish pending round 5)
+- **Version in repo**: v2.5.0 (marketplace still shows v2.4.0 — VSIX publish pending, see Round 6 steps below)
 - **Licence**: MIT
 - **Adoption (as of 2026-04-09)**: OpenVSX 484 downloads / 7 installs, VSCode Marketplace 65 acquisitions in last 30 days
 - **Tests**: 60/60 passing
@@ -39,19 +39,19 @@ Living tracker of where Quell is, what's landed, and what's next. Update after e
 ### Commit `d3aa1e2` - Round 4f: .Jules/ renamed to .jules/
 ### Commit `879ed58` - Jules: webview RCE fix (command allowlist), SecretScanner O(1) perf, a11y, @types/vscode bump
 ### Round 5 (8 commits) — CHANGELOG update, hover tooltip fix, toggleAutoSanitize command registration, Clear Vault sidebar button, vaultIndexAdd O(1) optimisation, scanner README rewrite, screenshot stubs, PROJECT_STATUS update
+### Round 6 (2 commits) — engines.vscode + @types/vscode aligned to ^1.107.0 (vsce fix), real marketplace screenshots landed
 
 ## What's next
 
-### Round 6 — Publish + real screenshots
+### Immediate publish steps (manual — do in order)
 
-Manual steps (not git commits):
-- Take 3 real screenshots: sidebar dashboard, inline diagnostics, redaction before/after. Replace PNG stubs in `assets/`.
-- `cd packages/scanner && npm run build && npm publish` (publishConfig already in place, access: public)
-- `npx vsce package` then upload to VS Code Marketplace (v2.4.0 → v2.5.0)
-- `npx ovsx publish` to update OpenVSX
-- Delete old `quell-2.4.0.vsix` from repo root (it's gitignored)
+1. **Build VSIX** — from repo root: `npx vsce package` → produces `quell-2.5.0.vsix`
+2. **VS Code Marketplace** — https://marketplace.visualstudio.com/manage/publishers/Sonofg0tham → Quell → Update → upload VSIX. Verify at https://marketplace.visualstudio.com/items?itemName=Sonofg0tham.quell
+3. **OpenVSX** — `npx ovsx publish quell-2.5.0.vsix -p <token>` (token at https://open-vsx.org/user-settings/tokens). Verify at https://open-vsx.org/extension/Sonofg0tham/quell
+4. **npm (@quell/scanner)** — `cd packages/scanner && npm run build && npm publish`. If not logged in: `npm login` first. Verify at https://www.npmjs.com/package/@quell/scanner
+5. **Clean up** — delete `quell-2.4.0.vsix` from repo root if present (gitignored, no git action needed)
 
-Then post-launch:
+### Post-launch
 - Launch post (Product Hunt / HN / LinkedIn/Twitter)
 - GitHub Action for automated VSIX release on tag push (`.github/workflows/release.yml`)
 - Monitor adoption numbers, respond to issues
