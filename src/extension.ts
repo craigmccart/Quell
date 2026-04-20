@@ -17,10 +17,11 @@ import { getConfig } from './configHelper';
 const VAULT_INDEX_KEY = 'quell.vaultIndex';
 
 async function vaultIndexAdd(context: vscode.ExtensionContext, placeholder: string): Promise<void> {
-    const index: string[] = context.globalState.get<string[]>(VAULT_INDEX_KEY, []);
-    if (!index.includes(placeholder)) {
-        index.push(placeholder);
-        await context.globalState.update(VAULT_INDEX_KEY, index);
+    const stored = context.globalState.get<string[]>(VAULT_INDEX_KEY, []);
+    const index = new Set<string>(stored);
+    if (!index.has(placeholder)) {
+        index.add(placeholder);
+        await context.globalState.update(VAULT_INDEX_KEY, Array.from(index));
     }
 }
 
