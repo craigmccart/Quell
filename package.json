@@ -20,8 +20,9 @@
     "categories": [
         "Chat",
         "Linters",
-        "Other"
+        "Education"
     ],
+    "preview": false,
     "keywords": [
         "security",
         "secrets",
