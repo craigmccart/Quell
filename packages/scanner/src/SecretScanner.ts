@@ -96,6 +96,7 @@ export class SecretScanner {
         { name: 'SendGrid API Key', regex: /SG\.[a-zA-Z0-9\-_]{22}\.[a-zA-Z0-9\-_]{43}/ },
         { name: 'Mailgun API Key', regex: /key-[0-9a-zA-Z]{32}/ },
         { name: 'Mailchimp API Key', regex: /\b[0-9a-f]{32}-us\d{1,2}/ },
+        { name: 'Resend API Key', regex: /re_[a-zA-Z0-9]{32,}/ },
 
         // ── Hosting & Deployment ─────────────
         { name: 'Heroku API Key', regex: /[hH]eroku.*[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/ },
@@ -106,6 +107,7 @@ export class SecretScanner {
         { name: 'DigitalOcean Refresh Token', regex: /dor_v1_[a-f0-9]{64}/ },
         { name: 'Render API Key', regex: /rnd_[a-zA-Z0-9]{32}/ },
         { name: 'Railway API Token', regex: /railway_[a-zA-Z0-9]{32,}/ },
+        { name: 'PlanetScale API Token', regex: /pscale_tkn_[a-zA-Z0-9_]{32,}/ },
         { name: 'Fly.io Access Token', regex: /fo1_[a-zA-Z0-9]{40,}/ },
 
         // ── Package Registries ───────────────
@@ -158,6 +160,7 @@ export class SecretScanner {
         { name: 'Firebase Cloud Messaging', regex: /AAAA[a-zA-Z0-9\-_]{7,}:[a-zA-Z0-9\-_]{140,}/ },
 
         // ── Misc / Generic ───────────────────
+        { name: 'Linear API Key', regex: /lin_api_[a-zA-Z0-9_]{40,}/ },
         { name: 'Postman API Key', regex: /PMAK-[a-f0-9]{24}-[a-f0-9]{34}/ },
         { name: 'Okta API Token', regex: /00[a-zA-Z0-9\-_]{40}/ },
         { name: 'Password in Assignment', regex: /(?:password|passwd|pwd)\s*[=:]\s*['"][^'"\n\r]{8,64}['"]/i },
