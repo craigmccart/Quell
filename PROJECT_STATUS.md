@@ -2,16 +2,16 @@
 
 Living tracker of where Quell is, what's landed, and what's next. Update after every session that changes state. Sits alongside `POSITIONING.md` (strategy) and `FIX_PROMPTS/` (concrete next actions).
 
-*Last updated: 2026-04-20 (round 7 landed: v2.5.1 live on marketplace, release workflow in place)*
+*Last updated: 2026-04-22 (round 8 landed: v2.6.0 with 3 new patterns, 69/69 tests, ready to publish)*
 
 ## Snapshot
 
 - **Repo**: `C:\\Users\\craig\\Github Repos\\Quell`, single checkout on `main`
 - **Publisher**: `Sonofg0tham`
-- **Version in repo**: v2.5.1 (live on VS Code Marketplace and OpenVSX)
+- **Version in repo**: v2.6.0 (not yet published — v2.5.1 is live on marketplace)
 - **Licence**: MIT
 - **Adoption (as of 2026-04-09)**: OpenVSX 484 downloads / 7 installs, VSCode Marketplace 65 acquisitions in last 30 days
-- **Tests**: 60/60 passing
+- **Tests**: 69/69 passing
 - **Working tree**: clean, up to date with origin/main
 
 ## Workflow rules for this project
@@ -52,11 +52,21 @@ With `.github/workflows/release.yml` in place, future versions work like this:
 ### Round 5 (8 commits) — CHANGELOG update, hover tooltip fix, toggleAutoSanitize command registration, Clear Vault sidebar button, vaultIndexAdd O(1) optimisation, scanner README rewrite, screenshot stubs, PROJECT_STATUS update
 ### Round 6 (2 commits) — engines.vscode + @types/vscode aligned to ^1.107.0 (vsce fix), real marketplace screenshots landed
 ### Round 7 (5 commits) — v2.5.1 .vscodeignore fix, GitHub Actions release workflow, category 'Education' + preview:false, improved marketplace description, PROJECT_STATUS update
+### Round 8 (5 commits) — PostgreSQL double-detection regression tests, PlanetScale + Resend + Linear patterns, v2.6.0 bump (69/69 tests)
 
 ## What's next
 
-### Pending publish
+### Publish v2.6.0
+
+1. Tag the release: `git tag v2.6.0 && git push origin v2.6.0`
+2. GitHub Actions builds `quell-2.6.0.vsix` and attaches it to a GitHub Release automatically
+3. Download VSIX from the GitHub Release page
+4. Upload to VS Code Marketplace (manual)
+5. `npx ovsx publish quell-2.6.0.vsix -p <token>` for OpenVSX
+
+### Pending
 - **npm (@quell/scanner)** — `cd packages/scanner && npm run build && npm publish` (needs `npm login` as Sonofg0tham first). Verify at https://www.npmjs.com/package/@quell/scanner
+- PostgreSQL double-detection confirmed as non-issue (same-value dedup works correctly)
 
 ### Post-launch
 - Launch post (Product Hunt / HN / LinkedIn/Twitter)
