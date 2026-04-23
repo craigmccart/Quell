@@ -189,8 +189,12 @@ test('detects SendGrid API Key', () => {
     );
 });
 
-test('detects Mailgun API Key', () => {
-    assertSecretDetected('key-abcdefghijklmnop1234567890abcdef', 'Mailgun API Key');
+test('detects Mailgun API Key (hex format)', () => {
+    assertSecretDetected('key-0123456789abcdef0123456789abcdef', 'Mailgun API Key');
+});
+
+test('does not flag key- followed by non-hex alphanumerics', () => {
+    assertNoSecrets('key-HELLOWORLDHELLOWORLDHELLOWORLDHELL');
 });
 
 // ── Resend ────────────────────────────────────────────────────
@@ -359,6 +363,21 @@ test('detects Supabase secret (service role) key', () => {
         'sb_secret_abcdefghijklmnopqrstuvwxyz1234567890',
         'Supabase Secret Key'
     );
+});
+
+
+// ── Okta ─────────────────────────────────────────────────────
+console.log('\n🔐  Okta:');
+
+test('detects Okta API Token', () => {
+    assertSecretDetected(
+        'OKTA_TOKEN=00abcdefghijklmnopqrstuvwxyz0123456789_-AB',
+        'Okta API Token'
+    );
+});
+
+test('does not flag 00-prefix hex that is too short', () => {
+    assertNoSecrets('00deadbeef');
 });
 
 

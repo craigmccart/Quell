@@ -58,7 +58,6 @@ export class SecretScanner {
         { name: 'OpenAI API Key (Svc)', regex: /sk-svcacct-[a-zA-Z0-9\-_]{40,}/ },
         { name: 'Anthropic API Key', regex: /sk-ant-[a-zA-Z0-9\-_]{40,}/ },
         { name: 'Hugging Face Token', regex: /hf_[a-zA-Z0-9]{34}/ },
-        { name: 'Cohere API Key', regex: /co-[a-zA-Z0-9]{40}/ },
         { name: 'Replicate API Token', regex: /r8_[a-zA-Z0-9]{37}/ },
 
         // ── Payment Providers ────────────────
@@ -94,7 +93,7 @@ export class SecretScanner {
 
         // ── Email Services ───────────────────
         { name: 'SendGrid API Key', regex: /SG\.[a-zA-Z0-9\-_]{22}\.[a-zA-Z0-9\-_]{43}/ },
-        { name: 'Mailgun API Key', regex: /key-[0-9a-zA-Z]{32}/ },
+        { name: 'Mailgun API Key', regex: /\bkey-[0-9a-f]{32}\b/ },
         { name: 'Mailchimp API Key', regex: /\b[0-9a-f]{32}-us\d{1,2}/ },
         { name: 'Resend API Key', regex: /re_[a-zA-Z0-9]{32,}/ },
 
@@ -160,7 +159,7 @@ export class SecretScanner {
         // ── Misc / Generic ───────────────────
         { name: 'Linear API Key', regex: /lin_api_[a-zA-Z0-9_]{40,}/ },
         { name: 'Postman API Key', regex: /PMAK-[a-f0-9]{24}-[a-f0-9]{34}/ },
-        { name: 'Okta API Token', regex: /00[a-zA-Z0-9\-_]{40}/ },
+        { name: 'Okta API Token', regex: /\b00[a-zA-Z0-9_-]{40}\b/ },
         { name: 'Password in Assignment', regex: /(?:password|passwd|pwd)\s*[=:]\s*['"][^'"\n\r]{8,64}['"]/i },
         { name: 'Token in Assignment', regex: /(?:token|api_key|apikey|access_key|auth_token|secret_key)\s*[=:]\s*['"][^'"\n\r]{16,100}['"]/i },
     ];
