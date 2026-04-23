@@ -59,6 +59,11 @@ export class SecretScanner {
         { name: 'Anthropic API Key', regex: /sk-ant-[a-zA-Z0-9\-_]{40,}/ },
         { name: 'Hugging Face Token', regex: /hf_[a-zA-Z0-9]{34}/ },
         { name: 'Replicate API Token', regex: /r8_[a-zA-Z0-9]{37}/ },
+        { name: 'OpenRouter API Key', regex: /sk-or-v1-[a-f0-9]{64}/ },
+        { name: 'Groq API Key', regex: /gsk_[A-Za-z0-9]{52}/ },
+        { name: 'Perplexity API Key', regex: /pplx-[A-Za-z0-9]{48}/ },
+        { name: 'xAI API Key', regex: /xai-[A-Za-z0-9]{80}/ },
+        { name: 'LangSmith API Key', regex: /lsv2_(?:pt|sk)_[a-f0-9]{32}_[a-f0-9]{10}/ },
 
         // ── Payment Providers ────────────────
         { name: 'Stripe Secret Key', regex: /sk_(live|test)_[0-9a-zA-Z_]{10,99}/ },
