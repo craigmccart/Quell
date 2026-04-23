@@ -2,6 +2,27 @@
 
 All notable changes to Quell will be documented in this file.
 
+## [2.7.0] - 2026-04-23
+
+### 🔍 New Detection Patterns
+- **OpenRouter API Key** (`sk-or-v1-...`) — multi-model routing for AI apps
+- **Groq API Key** (`gsk_...`) — fast inference provider
+- **Perplexity API Key** (`pplx-...`) — search-augmented LLM
+- **xAI API Key** (`xai-...`) — Grok models
+- **LangSmith API Key** (`lsv2_pt_...` / `lsv2_sk_...`) — LLM tracing & eval
+
+### 🧹 Pattern Hygiene
+- **Tightened** Mailgun regex to hex-only (was accepting any 32-char alphanumeric after `key-`)
+- **Tightened** Okta regex with word boundaries (was firing on any `00`-prefixed string)
+- **Removed** Cohere `co-` pattern — prefix is too generic; entropy pass catches the real keys
+- **Removed** Heroku — loose regex with no test coverage, platform usage declining
+- **Removed** Firebase Cloud Messaging legacy pattern — Google deprecated the legacy FCM API
+  in June 2024. OAuth service accounts are still covered by the existing Google pattern.
+
+### 🎨 UI
+- **Activity-bar sidebar icon** redesigned as a shield silhouette using `currentColor`, so
+  it recolours with the VSCode theme instead of always rendering blue.
+
 ## [2.6.0] - 2026-04-22
 
 ### 🔍 New Detection Patterns
