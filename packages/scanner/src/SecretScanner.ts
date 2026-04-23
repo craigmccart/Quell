@@ -99,7 +99,6 @@ export class SecretScanner {
         { name: 'Resend API Key', regex: /re_[a-zA-Z0-9]{32,}/ },
 
         // ── Hosting & Deployment ─────────────
-        { name: 'Heroku API Key', regex: /[hH]eroku.*[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/ },
         { name: 'Vercel Access Token', regex: /vercel_[a-zA-Z0-9]{24,}/ },
         { name: 'Netlify Access Token', regex: /nfp_[a-zA-Z0-9]{40}/ },
         { name: 'DigitalOcean PAT', regex: /dop_v1_[a-f0-9]{64}/ },
@@ -153,11 +152,10 @@ export class SecretScanner {
         { name: 'Sentry DSN', regex: /https:\/\/[a-f0-9]{32}@[a-z0-9.]+\.sentry\.io\/\d+/ },
         { name: 'New Relic API Key', regex: /NRAK-[A-Z0-9]{27}/ },
 
-        // ── Supabase / Firebase ──────────────
+        // ── Supabase ─────────────────────────
         { name: 'Supabase Service Role Key', regex: /sbp_[a-f0-9]{40}/ },
         { name: 'Supabase Publishable Key', regex: /sb_publishable_[a-zA-Z0-9_]{20,}/ },
         { name: 'Supabase Secret Key', regex: /sb_secret_[a-zA-Z0-9_]{20,}/ },
-        { name: 'Firebase Cloud Messaging', regex: /AAAA[a-zA-Z0-9\-_]{7,}:[a-zA-Z0-9\-_]{140,}/ },
 
         // ── Misc / Generic ───────────────────
         { name: 'Linear API Key', regex: /lin_api_[a-zA-Z0-9_]{40,}/ },
