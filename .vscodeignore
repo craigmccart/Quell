@@ -16,3 +16,4 @@ out/packages/scanner/src/test/**
 packages/scanner/dist-test/**
 packages/scanner/src/test/**
 playground/**
+FIX_PROMPTS/**

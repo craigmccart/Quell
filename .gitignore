@@ -24,3 +24,6 @@ packages/scanner/node_modules
 
 # Demo playground (contains intentional fake secrets for testing)
 playground/
+
+# Working prompt drafts — not part of the shipped product
+FIX_PROMPTS/
