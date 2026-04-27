@@ -1,0 +1,11 @@
+{
+  "name": "quell",
+  "description": "Intercepts your prompts and blocks ones that contain API keys, passwords, or other secrets before they reach Claude. Returns a redacted version you can resubmit safely.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Craig McCart"
+  },
+  "homepage": "https://github.com/sonofg0tham/Quell",
+  "repository": "https://github.com/sonofg0tham/Quell",
+  "license": "MIT"
+}

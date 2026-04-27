@@ -1,0 +1,439 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SecretScanner = exports.DEFAULT_CONFIG = void 0;
+const crypto = __importStar(require("crypto"));
+exports.DEFAULT_CONFIG = {
+    enableEntropy: true,
+    entropyThreshold: 4.5,
+    minimumTokenLength: 20,
+    customPatterns: [],
+    whitelistPatterns: [],
+    redactTestKeys: false,
+};
+// ─────────────────────────────────────────────
+// SecretScanner — fully offline, zero network
+// ─────────────────────────────────────────────
+class SecretScanner {
+    // ═════════════════════════════════════════
+    //  Regex Pattern Library (75+ patterns)
+    // ═════════════════════════════════════════
+    static PATTERNS = [
+        // ── Cloud Providers ──────────────────
+        { name: 'AWS Access Key ID', regex: /(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}/ },
+        { name: 'AWS Secret Access Key', regex: /(?:aws_secret_access_key|aws_secret_key|secret_key)\s*[=:]\s*[A-Za-z0-9\/+=]{40}/ },
+        { name: 'AWS MWS Key', regex: /amzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ },
+        { name: 'Google API Key', regex: /AIza[0-9A-Za-z\-_]{35}/ },
+        { name: 'Google OAuth Token', regex: /ya29\.[0-9A-Za-z\-_]+/ },
+        { name: 'Google Cloud Service Acct', regex: /"type"\s*:\s*"service_account"/ },
+        { name: 'Google OAuth Client Secret', regex: /GOCSPX-[a-zA-Z0-9\-_]{28}/ },
+        { name: 'Azure Storage Account Key', regex: /AccountKey=[A-Za-z0-9+\/=]{88}/ },
+        { name: 'Azure SAS Token', regex: /[?&]sig=[A-Za-z0-9%+\/=]{40,}/ },
+        // ── AI / ML Providers ────────────────
+        // Note: Google Gemini keys (AIzaSy...) are a strict subset of the Google API Key
+        // pattern above and are already covered by it.
+        { name: 'OpenAI API Key', regex: /sk-[a-zA-Z0-9]{20}T3BlbkFJ[a-zA-Z0-9]{20}/ },
+        { name: 'OpenAI API Key (Project)', regex: /sk-proj-[a-zA-Z0-9\-_]{40,}/ },
+        { name: 'OpenAI API Key (Svc)', regex: /sk-svcacct-[a-zA-Z0-9\-_]{40,}/ },
+        { name: 'Anthropic API Key', regex: /sk-ant-[a-zA-Z0-9\-_]{40,}/ },
+        { name: 'Hugging Face Token', regex: /hf_[a-zA-Z0-9]{34}/ },
+        { name: 'Replicate API Token', regex: /r8_[a-zA-Z0-9]{37}/ },
+        { name: 'OpenRouter API Key', regex: /sk-or-v1-[a-f0-9]{64}/ },
+        { name: 'Groq API Key', regex: /gsk_[A-Za-z0-9]{52}/ },
+        { name: 'Perplexity API Key', regex: /pplx-[A-Za-z0-9]{48}/ },
+        { name: 'xAI API Key', regex: /xai-[A-Za-z0-9]{80}/ },
+        { name: 'LangSmith API Key', regex: /lsv2_(?:pt|sk)_[a-f0-9]{32}_[a-f0-9]{10}/ },
+        // ── Payment Providers ────────────────
+        { name: 'Stripe Secret Key', regex: /sk_(live|test)_[0-9a-zA-Z_]{10,99}/ },
+        { name: 'Stripe Restricted Key', regex: /rk_(live|test)_[0-9a-zA-Z_]{10,99}/ },
+        { name: 'Stripe Publishable Key', regex: /pk_(live|test)_[0-9a-zA-Z_]{10,99}/ },
+        { name: 'Square Access Token', regex: /sq0atp-[0-9A-Za-z\-_]{10,40}/ },
+        { name: 'Square OAuth Secret', regex: /sq0csp-[0-9A-Za-z\-_]{20,50}/ },
+        { name: 'PayPal Braintree Token', regex: /access_token\$(production|sandbox)\$[0-9a-zA-Z_$]{10,}/ },
+        // ── Version Control & Dev ────────────
+        { name: 'GitHub Personal Access Token', regex: /ghp_[a-zA-Z0-9]{36}/ },
+        { name: 'GitHub OAuth Token', regex: /gho_[a-zA-Z0-9]{36}/ },
+        { name: 'GitHub App Token', regex: /ghu_[a-zA-Z0-9]{36}/ },
+        { name: 'GitHub App Server Token', regex: /ghs_[a-zA-Z0-9]{36}/ },
+        { name: 'GitHub App Refresh Token', regex: /ghr_[a-zA-Z0-9]{36}/ },
+        { name: 'GitHub Fine-grained PAT', regex: /github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59}/ },
+        { name: 'GitLab Personal Access Token', regex: /glpat-[0-9A-Za-z\-_]{20}/ },
+        { name: 'GitLab Pipeline Trigger Token', regex: /glptt-[0-9a-f]{40}/ },
+        { name: 'GitLab Runner Token', regex: /glrt-[0-9A-Za-z\-_]{20}/ },
+        { name: 'Bitbucket App Password', regex: /ATBB[a-zA-Z0-9]{32}/ },
+        // ── Communication ────────────────────
+        { name: 'Slack Bot Token', regex: /xoxb-[0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{24,34}/ },
+        { name: 'Slack User Token', regex: /xoxp-[0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{24,34}/ },
+        { name: 'Slack App Token', regex: /xapp-[0-9]{1}-[A-Z0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{64}/ },
+        { name: 'Slack Webhook', regex: /https:\/\/hooks\.slack\.com\/services\/T[A-Z0-9]{8,}\/B[A-Z0-9]{8,}\/[a-zA-Z0-9]{24}/ },
+        { name: 'Discord Bot Token', regex: /[MN][A-Za-z\d]{23,}\.[\w-]{6}\.[\w-]{27,}/ },
+        { name: 'Discord Webhook', regex: /https:\/\/discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+/ },
+        { name: 'Telegram Bot Token', regex: /\d{8,10}:[A-Za-z0-9_-]{35}/ },
+        { name: 'Twilio API Key', regex: /SK[0-9a-fA-F]{32}/ },
+        { name: 'Twilio Account SID', regex: /AC[a-z0-9]{32}/ },
+        // ── Email Services ───────────────────
+        { name: 'SendGrid API Key', regex: /SG\.[a-zA-Z0-9\-_]{22}\.[a-zA-Z0-9\-_]{43}/ },
+        { name: 'Mailgun API Key', regex: /\bkey-[0-9a-f]{32}\b/ },
+        { name: 'Mailchimp API Key', regex: /\b[0-9a-f]{32}-us\d{1,2}/ },
+        { name: 'Resend API Key', regex: /re_[a-zA-Z0-9]{32,}/ },
+        // ── Hosting & Deployment ─────────────
+        { name: 'Vercel Access Token', regex: /vercel_[a-zA-Z0-9]{24,}/ },
+        { name: 'Netlify Access Token', regex: /nfp_[a-zA-Z0-9]{40}/ },
+        { name: 'DigitalOcean PAT', regex: /dop_v1_[a-f0-9]{64}/ },
+        { name: 'DigitalOcean OAuth Token', regex: /doo_v1_[a-f0-9]{64}/ },
+        { name: 'DigitalOcean Refresh Token', regex: /dor_v1_[a-f0-9]{64}/ },
+        { name: 'Render API Key', regex: /rnd_[a-zA-Z0-9]{32}/ },
+        { name: 'Railway API Token', regex: /railway_[a-zA-Z0-9]{32,}/ },
+        { name: 'PlanetScale API Token', regex: /pscale_tkn_[a-zA-Z0-9_]{32,}/ },
+        { name: 'Fly.io Access Token', regex: /fo1_[a-zA-Z0-9]{40,}/ },
+        // ── Package Registries ───────────────
+        { name: 'NPM Access Token', regex: /npm_[a-zA-Z0-9]{36}/ },
+        { name: 'PyPI API Token', regex: /pypi-[a-zA-Z0-9\-_]{50,}/ },
+        { name: 'NuGet API Key', regex: /oy2[a-z0-9]{43}/ },
+        { name: 'RubyGems API Key', regex: /rubygems_[a-f0-9]{48}/ },
+        // ── Auth / Tokens ────────────────────
+        { name: 'JSON Web Token', regex: /eyJ[a-zA-Z0-9\-_]+\.eyJ[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_.+\/=]+/ },
+        { name: 'Bearer Token', regex: /Bearer\s+[a-zA-Z0-9\-._~+\/]{20,}/i },
+        { name: 'Basic Auth Credentials', regex: /Basic\s+[a-zA-Z0-9+\/=]{20,}/i },
+        { name: 'OAuth Client Secret', regex: /client_secret[=:]\s*['"]?[a-zA-Z0-9\-_]{20,}['"]?/ },
+        // ── Cryptographic Keys ───────────────
+        { name: 'RSA Private Key', regex: /-----BEGIN RSA PRIVATE KEY-----/ },
+        { name: 'EC Private Key', regex: /-----BEGIN EC PRIVATE KEY-----/ },
+        { name: 'DSA Private Key', regex: /-----BEGIN DSA PRIVATE KEY-----/ },
+        { name: 'OpenSSH Private Key', regex: /-----BEGIN OPENSSH PRIVATE KEY-----/ },
+        { name: 'PGP Private Key Block', regex: /-----BEGIN PGP PRIVATE KEY BLOCK-----/ },
+        { name: 'Generic Private Key', regex: /-----BEGIN PRIVATE KEY-----/ },
+        // ── Database Connection Strings ──────
+        { name: 'PostgreSQL Connection URI', regex: /postgres(?:ql)?:\/\/[^\s'"]+:[^\s'"]+@[^\s'"]+/ },
+        { name: 'MySQL Connection URI', regex: /mysql:\/\/[^\s'"]+:[^\s'"]+@[^\s'"]+/ },
+        { name: 'MongoDB Connection URI', regex: /mongodb(?:\+srv)?:\/\/[^\s'"]+:[^\s'"]+@[^\s'"]+/ },
+        { name: 'Redis Connection URI', regex: /redis(?:s)?:\/\/[^\s'"]+:[^\s'"]+@[^\s'"]+/ },
+        { name: 'AMQP Connection URI', regex: /amqps?:\/\/[^\s'"]+:[^\s'"]+@[^\s'"]+/ },
+        // ── Infrastructure / DevOps ──────────
+        { name: 'Hashicorp Vault Token', regex: /hvs\.[a-zA-Z0-9\-_]{24,}/ },
+        { name: 'Terraform Cloud Token', regex: /\b[a-zA-Z0-9]{14}\.atlasv1\.[a-zA-Z0-9\-_]{60,}/ },
+        { name: 'Doppler Token', regex: /dp\.st\.[a-zA-Z0-9\-_]{40,}/ },
+        // ── E-commerce ───────────────────────
+        { name: 'Shopify Access Token', regex: /shpat_[a-fA-F0-9]{32}/ },
+        { name: 'Shopify Custom App Token', regex: /shpca_[a-fA-F0-9]{32}/ },
+        { name: 'Shopify Private App Token', regex: /shppa_[a-fA-F0-9]{32}/ },
+        { name: 'Shopify Shared Secret', regex: /shpss_[a-fA-F0-9]{32}/ },
+        // ── Monitoring / Analytics ───────────
+        { name: 'Datadog API Key', regex: /dd(?:api|app)key[=:]\s*['"]?[a-f0-9]{32,40}['"]?/i },
+        { name: 'Sentry DSN', regex: /https:\/\/[a-f0-9]{32}@[a-z0-9.]+\.sentry\.io\/\d+/ },
+        { name: 'New Relic API Key', regex: /NRAK-[A-Z0-9]{27}/ },
+        // ── Supabase ─────────────────────────
+        { name: 'Supabase Service Role Key', regex: /sbp_[a-f0-9]{40}/ },
+        { name: 'Supabase Publishable Key', regex: /sb_publishable_[a-zA-Z0-9_]{20,}/ },
+        { name: 'Supabase Secret Key', regex: /sb_secret_[a-zA-Z0-9_]{20,}/ },
+        // ── Misc / Generic ───────────────────
+        { name: 'Linear API Key', regex: /lin_api_[a-zA-Z0-9_]{40,}/ },
+        { name: 'Postman API Key', regex: /PMAK-[a-f0-9]{24}-[a-f0-9]{34}/ },
+        { name: 'Okta API Token', regex: /\b00[a-zA-Z0-9_-]{40}\b/ },
+        { name: 'Password in Assignment', regex: /(?:password|passwd|pwd)\s*[=:]\s*['"][^'"\n\r]{8,64}['"]/i },
+        { name: 'Token in Assignment', regex: /(?:token|api_key|apikey|access_key|auth_token|secret_key)\s*[=:]\s*['"][^'"\n\r]{16,100}['"]/i },
+    ];
+    // Pre-compiled global versions of PATTERNS — created once at class load time.
+    // Preserves original flags (e.g. 'i') and adds 'g' so text.match() returns all hits.
+    static GLOBAL_PATTERNS = SecretScanner.PATTERNS.map(p => ({
+        name: p.name,
+        regex: new RegExp(p.regex.source, p.regex.flags.includes('g') ? p.regex.flags : p.regex.flags + 'g'),
+    }));
+    // ═════════════════════════════════════════
+    //  Public API
+    // ═════════════════════════════════════════
+    /**
+     * Scans text for secrets using regex patterns + Shannon entropy.
+     * Returns redacted text with placeholders, a secret map, and detected types.
+     *
+     * @param text   - Raw input to scan (prompt, file content, etc.)
+     * @param config - Optional scanner config (defaults to DEFAULT_CONFIG)
+     */
+    static redact(text, config = exports.DEFAULT_CONFIG) {
+        let redactedText = text;
+        const secrets = new Map();
+        const detectedTypes = new Set();
+        // O(1) reverse-lookup map: secretValue → placeholder (avoids O(N) scan on every secret)
+        const valueToPlaceholder = new Map();
+        // Build whitelist regex set
+        const whitelistRegexps = config.whitelistPatterns
+            .map((p) => { try {
+            return new RegExp(p);
+        }
+        catch {
+            return null;
+        } })
+            .filter((r) => r !== null);
+        const isWhitelisted = (value) => {
+            return whitelistRegexps.some((re) => re.test(value));
+        };
+        // Obvious placeholder values to skip for Password/Token in Assignment matches.
+        // These produce noisy false positives in docs, READMEs, and example configs.
+        const PLACEHOLDER_VALUES = new Set([
+            'changeme', 'password', 'your_password', 'your_password_here',
+            'xxx', 'xxxxxx', 'example', 'placeholder', '123456', 'hunter2',
+            'test', 'secret', 'your_secret', 'your_secret_here',
+            'your_api_key', 'your_api_key_here', 'your_token', 'your_token_here',
+        ]);
+        // Officially-published test/demo credentials. Safe to include in READMEs and
+        // examples. Skipped unless config.redactTestKeys is true.
+        const TEST_CREDENTIALS = new Set([
+            'AKIAIOSFODNN7EXAMPLE', // AWS Access Key ID
+            'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY', // AWS Secret Access Key
+            'ASIAIOSFODNN7EXAMPLE', // AWS STS key
+            'sk-ant-api03-EXAMPLE', // Anthropic (pattern prefix)
+            'ghp_EXAMPLE', // GitHub PAT prefix
+            'glpat-EXAMPLE', // GitLab PAT prefix
+        ]);
+        const isPlaceholderAssignment = (typeName, match) => {
+            if (typeName !== 'Password in Assignment' && typeName !== 'Token in Assignment') {
+                return false;
+            }
+            // Extract the quoted value from e.g. password="changeme"
+            const m = match.match(/['"]([^'"]+)['"]/);
+            if (!m) {
+                return false;
+            }
+            return PLACEHOLDER_VALUES.has(m[1].toLowerCase());
+        };
+        const isTestCredential = (secretValue) => {
+            if (config.redactTestKeys) {
+                return false;
+            }
+            return TEST_CREDENTIALS.has(secretValue);
+        };
+        const replaceSecret = (secretValue, typeName) => {
+            if (isWhitelisted(secretValue)) {
+                return;
+            }
+            if (isPlaceholderAssignment(typeName, secretValue)) {
+                return;
+            }
+            if (isTestCredential(secretValue)) {
+                return;
+            }
+            // Check if this exact secret value was already captured (O(1) via reverse map)
+            let placeholder = valueToPlaceholder.get(secretValue) || '';
+            if (!placeholder) {
+                const uuid = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
+                placeholder = `{{SECRET_${uuid}}}`;
+                secrets.set(placeholder, secretValue);
+                valueToPlaceholder.set(secretValue, placeholder);
+                detectedTypes.add(typeName);
+            }
+            // Use replaceAll with callback to avoid special replacement patterns ($&, $1, etc.)
+            redactedText = redactedText.replaceAll(secretValue, () => placeholder);
+        };
+        // ── Step 1: Built-in Regex Patterns ──
+        for (const pattern of this.GLOBAL_PATTERNS) {
+            const matches = text.match(pattern.regex);
+            if (matches) {
+                const uniqueMatches = [...new Set(matches)];
+                uniqueMatches.forEach((match) => replaceSecret(match, pattern.name));
+            }
+        }
+        // ── Step 2: User-defined Custom Patterns ──
+        for (const custom of config.customPatterns) {
+            try {
+                const customRegex = new RegExp(custom.regex, 'g');
+                const matches = text.match(customRegex);
+                if (matches) {
+                    const uniqueMatches = [...new Set(matches)];
+                    uniqueMatches.forEach((match) => replaceSecret(match, custom.name));
+                }
+            }
+            catch {
+                // Silently skip invalid user-defined patterns
+            }
+        }
+        // ── Step 3: Shannon Entropy Scan ──
+        if (config.enableEntropy) {
+            // Tokenize the *current* redacted text (after regex replacements)
+            const tokens = redactedText.split(/[\s="',`:;()\[\]{}]+/);
+            for (const token of tokens) {
+                // Skip already-redacted placeholders
+                if (token.startsWith('{{SECRET_') && token.endsWith('}}')) {
+                    continue;
+                }
+                // Skip standard UUIDs (not usually sensitive on their own)
+                if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) {
+                    continue;
+                }
+                // Skip tokens that look like normal words (all lowercase, no digits/symbols mix)
+                if (/^[a-z]+$/i.test(token)) {
+                    continue;
+                }
+                // Skip URLs / file paths that aren't connection strings
+                if (/^https?:\/\//.test(token) && !/:\/\/[^:@\s]{1,512}:[^@\s]{1,512}@/.test(token)) {
+                    continue;
+                }
+                // Skip npm / yarn integrity hashes (sha256-, sha384-, sha512-)
+                if (/^sha[0-9]+-/i.test(token)) {
+                    continue;
+                }
+                // Skip registry URL fragments (e.g. //registry.npmjs.org/...)
+                if (/^(\/\/)?registry\.npmjs\.org\//i.test(token)) {
+                    continue;
+                }
+                if (/^(\/\/)?registry\.yarnpkg\.com\//i.test(token)) {
+                    continue;
+                }
+                // Skip URL fragments that are clearly partial paths (start with //)
+                if (/^\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\//i.test(token)) {
+                    continue;
+                }
+                // Skip tokens that look like package tarball URLs (contain .tgz)
+                if (/\.tgz$/i.test(token)) {
+                    continue;
+                }
+                // Skip government / documentation URLs and regulatory reference IDs
+                if (/^(https?:\/\/)?(www\.)?[a-z0-9.-]+\.(gov|edu|mil)\//i.test(token)) {
+                    continue;
+                }
+                // Skip tokens that are mostly path-like (contain multiple / and shell-like chars)
+                if ((token.match(/\//g) || []).length >= 2 && /^[a-zA-Z0-9@.\-_/$*~]+$/.test(token)) {
+                    continue;
+                }
+                // Skip code identifiers: dotted property access (e.g. SCORE_WEIGHTS.emergencyContacts)
+                if (/^[a-zA-Z_$][a-zA-Z0-9_$]*\.[a-zA-Z_$][a-zA-Z0-9_$]*/.test(token)) {
+                    continue;
+                }
+                // Skip SCREAMING_SNAKE_CASE identifiers (e.g. VITE_SUPABASE_ANON_KEY)
+                if (/^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$/.test(token)) {
+                    continue;
+                }
+                // Skip environment variable references (import.meta.env.*, process.env.*)
+                if (/^(import\.meta\.env|process\.env)\./i.test(token)) {
+                    continue;
+                }
+                // Skip well-known character set definitions (base32, base36, hex alphabets)
+                if (/^[A-Z0-9]{20,36}$/.test(token) && /^[A-Z2-7]+$|^[0-9A-Z]+$|^[0-9A-F]+$/i.test(token)) {
+                    continue;
+                }
+                // Skip base64 blobs (>80 chars) — likely source maps, webpack output, not secrets
+                if (token.length > 80 && /^[A-Za-z0-9+/=_-]+$/.test(token)) {
+                    continue;
+                }
+                // Skip webpack module identifiers (e.g. __WEBPACK_IMPORTED_MODULE_)
+                if (/__WEBPACK_/.test(token) || /__esModule/.test(token)) {
+                    continue;
+                }
+                // Skip URL-encoded strings (e.g. C%3A%5CUsers%5C...)
+                if (/%[0-9A-Fa-f]{2}/.test(token) && (token.match(/%/g) || []).length >= 3) {
+                    continue;
+                }
+                // Skip minified CSS/JS fragments (contain lots of escaped sequences)
+                if (/\\n|\\t|\\r/.test(token) && token.length > 30) {
+                    continue;
+                }
+                if (token.length >= config.minimumTokenLength) {
+                    const entropy = this.calculateEntropy(token);
+                    if (entropy > config.entropyThreshold) {
+                        const type = /^[0-9a-fA-F]+$/.test(token)
+                            ? 'High Entropy Hex String'
+                            : 'High Entropy Token';
+                        replaceSecret(token, type);
+                    }
+                }
+            }
+        }
+        return { redactedText, secrets, detectedTypes };
+    }
+    /**
+     * Returns the total number of built-in regex patterns.
+     * Useful for diagnostics / UI display.
+     */
+    static get patternCount() {
+        return this.PATTERNS.length;
+    }
+    // ═══════════════════════════════════
+    //  Entropy Calculation
+    // ═══════════════════════════════════
+    // Pre-allocated static array for fast entropy calculations, avoiding allocations on every call.
+    static ENTROPY_FREQUENCIES = new Int32Array(256);
+    /**
+     * Calculates Shannon entropy of a string.
+     * Higher entropy → more random → more likely to be a secret.
+     * Typical prose: 2-3 bits. API keys: 4.5-6 bits.
+     */
+    static calculateEntropy(str) {
+        const len = str.length;
+        if (len === 0) {
+            return 0;
+        }
+        // Fast path: use a pre-allocated fixed Int32Array for ASCII character frequencies.
+        // This is significantly faster than creating a new Int32Array or Map on every call.
+        const frequencies = SecretScanner.ENTROPY_FREQUENCIES;
+        for (let i = 0; i < len; i++) {
+            const code = str.charCodeAt(i);
+            if (code > 255) {
+                // Non-ASCII character — zero out the array we modified and fall back to the Map-based implementation.
+                for (let j = 0; j < i; j++) {
+                    frequencies[str.charCodeAt(j)] = 0;
+                }
+                return SecretScanner._calculateEntropyFallback(str);
+            }
+            frequencies[code]++;
+        }
+        let entropy = 0;
+        for (let i = 0; i < len; i++) {
+            const code = str.charCodeAt(i);
+            const count = frequencies[code];
+            if (count > 0) {
+                const p = count / len;
+                entropy -= p * Math.log2(p);
+                // Lazily reset the modified index to zero for the next calculation
+                frequencies[code] = 0;
+            }
+        }
+        return entropy;
+    }
+    static _calculateEntropyFallback(str) {
+        const len = str.length;
+        const frequencies = new Map();
+        for (let i = 0; i < len; i++) {
+            const char = str[i];
+            frequencies.set(char, (frequencies.get(char) || 0) + 1);
+        }
+        let entropy = 0;
+        for (const [, count] of frequencies) {
+            const p = count / len;
+            entropy -= p * Math.log2(p);
+        }
+        return entropy;
+    }
+}
+exports.SecretScanner = SecretScanner;
+//# sourceMappingURL=SecretScanner.js.map
