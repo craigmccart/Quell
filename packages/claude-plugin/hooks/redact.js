@@ -102,6 +102,6 @@ process.stdin.on('end', () => {
 });
 
 // Last-resort safety net: if stdin never closes for some reason, don't hang
-// the user's session forever. The hook config's timeout (10s) will kill us
+// the user's session forever. The hook config's timeout (5s) will kill us
 // anyway, but be explicit about what happens at the boundary.
-setTimeout(() => failOpen('stdin never closed within 9s'), 9000).unref();
+setTimeout(() => failOpen('stdin never closed within 4s'), 4000).unref();
