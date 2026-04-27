@@ -1,4 +1,4 @@
-# @sonofgotham/quell-scanner
+# @sonofg0tham/quell-scanner
 
 Offline secret-detection engine. The core scanner behind the [Quell VSCode extension](https://marketplace.visualstudio.com/items?itemName=Sonofg0tham.quell).
 
@@ -10,13 +10,13 @@ Offline secret-detection engine. The core scanner behind the [Quell VSCode exten
 ## Install
 
 ```bash
-npm install @sonofgotham/quell-scanner
+npm install @sonofg0tham/quell-scanner
 ```
 
 ## Usage
 
 ```ts
-import { SecretScanner, DEFAULT_CONFIG } from '@sonofgotham/quell-scanner';
+import { SecretScanner, DEFAULT_CONFIG } from '@sonofg0tham/quell-scanner';
 
 const { redactedText, secrets, detectedTypes } = SecretScanner.redact(
   'Token: ghp_ABCDEFabcdef1234567890abcdef123456',
@@ -38,7 +38,7 @@ console.log(secrets);
 ## Configuration
 
 ```ts
-import { ScannerConfig, SecretScanner } from '@sonofgotham/quell-scanner';
+import { ScannerConfig, SecretScanner } from '@sonofg0tham/quell-scanner';
 
 const config: ScannerConfig = {
   enableEntropy: true,
