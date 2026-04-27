@@ -14,7 +14,7 @@ This is the third Quell surface. The other two:
 When you press Enter on a prompt in Claude Code:
 
 1. Hook script reads the prompt from stdin.
-2. Quell's scanner runs over it (75+ regex patterns plus Shannon entropy analysis, the
+2. Quell's scanner runs over it (80+ regex patterns plus Shannon entropy analysis, the
    same engine that powers the VSCode extension).
 3. **Clean prompt** → exits silently, prompt goes to Claude unchanged.
 4. **Secret detected** → exits with code 2, prompt is erased from context, and stderr
@@ -49,11 +49,13 @@ publish to a marketplace) — that's coming after the v0.1.0 dogfood period.
 Inside a Claude Code session with the plugin loaded, paste a fake secret:
 
 ```
-ghp_ABCDEFabcdef1234567890abcdef123456
+ghp_ABCDEFabcdef1234567890abcdef12345678
 ```
 
 Expected: prompt is blocked, you see a stderr message with `🛡️  Quell blocked your
-prompt`, and the original is not sent.
+prompt — 1 secret(s) detected (GitHub Personal Access Token)`, and the original is
+not sent. The fixture above is exactly 36 chars after `ghp_` so it hits the explicit
+GitHub PAT regex; shorter fixtures still get caught, just by the entropy pass instead.
 
 A clean prompt like *"how do I write a Python loop"* should pass through with no
 visible Quell output.
