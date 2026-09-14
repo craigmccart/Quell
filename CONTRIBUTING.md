@@ -12,7 +12,7 @@ Thanks for looking! Quell is an open-source VSCode extension that keeps secrets 
 ## Getting set up
 
 ```bash
-git clone https://github.com/sonofg0tham/Quell.git
+git clone https://github.com/craigmccart/Quell.git
 cd Quell
 npm install
 npm run compile
@@ -50,7 +50,7 @@ If you have never opened a pull request before, the short version is:
 2. Clone your fork, create a branch (`git checkout -b fix/pattern-cloudflare`).
 3. Make your changes, commit with a clear message.
 4. Push the branch to your fork (`git push -u origin fix/pattern-cloudflare`).
-5. Open a pull request from your fork back to `sonofg0tham/Quell:main`. GitHub walks you through this.
+5. Open a pull request from your fork back to `craigmccart/Quell:main`. GitHub walks you through this.
 6. CI runs (compile, tests, CodeQL). Fix anything red.
 7. A maintainer reviews, may ask for changes, and eventually merges.
 

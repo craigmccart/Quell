@@ -1,9 +1,9 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Sonofg0tham/Quell/main/assets/quell-logo-dark.png">
-  <img src="https://raw.githubusercontent.com/Sonofg0tham/Quell/main/assets/quell-logo-light.png" alt="Quell" height="56">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/craigmccart/Quell/main/assets/quell-logo-dark.png">
+  <img src="https://raw.githubusercontent.com/craigmccart/Quell/main/assets/quell-logo-light.png" alt="Quell" height="56">
 </picture>
 
-[![CI](https://github.com/Sonofg0tham/Quell/actions/workflows/ci.yml/badge.svg)](https://github.com/Sonofg0tham/Quell/actions/workflows/ci.yml)
+[![CI](https://github.com/craigmccart/Quell/actions/workflows/ci.yml/badge.svg)](https://github.com/craigmccart/Quell/actions/workflows/ci.yml)
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Quell-23A7C7)](https://marketplace.visualstudio.com/items?itemName=Sonofg0tham.quell)
 [![Open VSX](https://img.shields.io/open-vsx/v/Sonofg0tham/quell?label=Open%20VSX)](https://open-vsx.org/extension/Sonofg0tham/quell)
 [![npm](https://img.shields.io/npm/v/%40sonofg0tham%2Fquell-scanner?label=quell-scanner)](https://www.npmjs.com/package/@sonofg0tham/quell-scanner)
@@ -16,7 +16,7 @@
 
 > 100% offline. Zero network calls. Zero telemetry. Your secrets never leave your machine.
 
-**New here? Read [USAGE.md](https://github.com/Sonofg0tham/Quell/blob/main/USAGE.md).** It's a step-by-step setup guide plus a worked scenario for each of the three engines, written for people who want to know *when they'd actually hit this*, not just what the features are called.
+**New here? Read [USAGE.md](https://github.com/craigmccart/Quell/blob/main/USAGE.md).** It's a step-by-step setup guide plus a worked scenario for each of the three engines, written for people who want to know *when they'd actually hit this*, not just what the features are called.
 
 ![Quell sidebar dashboard](assets/screenshot-sidebar.png)
 ![Inline diagnostics and Quick Fix](assets/screenshot-diagnostics.png)
@@ -104,7 +104,7 @@ You don't really "use" most of Quell. It watches, and interrupts when something 
 | Opening a README or `AGENTS.md` from a repo you didn't write | **PromptGuard** | Text you can't see telling your assistant what to do |
 | Adding an MCP server to Cursor or Claude Desktop | **McpGuard** | A token pasted into a config you're about to commit |
 
-Full worked scenarios for each, with real examples, are in **[USAGE.md](https://github.com/Sonofg0tham/Quell/blob/main/USAGE.md)**.
+Full worked scenarios for each, with real examples, are in **[USAGE.md](https://github.com/craigmccart/Quell/blob/main/USAGE.md)**.
 
 ---
 
@@ -248,7 +248,7 @@ Get notified when saving a file that still contains raw secrets — with a one-c
 - **100% offline** — zero network calls, zero telemetry, zero external APIs
 - **OS Keychain storage** — secrets encrypted at rest by your operating system
 - **Non-destructive** — real values always restorable from the Keychain
-- **Open source** — [audit the code yourself](https://github.com/sonofg0tham/Quell)
+- **Open source** — [audit the code yourself](https://github.com/craigmccart/Quell)
 
 ---
 
@@ -294,10 +294,10 @@ You can reopen it any time from the Command Palette with `Welcome: Open Walkthro
 2. Follow the onboarding walkthrough, or run `Quell: Open Demo File` to see detection working on safe fake credentials
 3. Learn the two shortcuts: `Ctrl+Shift+C` copies with secrets stripped, `Ctrl+Shift+V` pastes with secrets stripped
 4. Enable the **AI Indexing Shield** in the sidebar
-5. Consider **Clipboard Auto-Sanitize** in the sidebar. It protects you when you forget the shortcut, which is most of the time, but read the trade-off in [USAGE.md](https://github.com/Sonofg0tham/Quell/blob/main/USAGE.md) first
+5. Consider **Clipboard Auto-Sanitize** in the sidebar. It protects you when you forget the shortcut, which is most of the time, but read the trade-off in [USAGE.md](https://github.com/craigmccart/Quell/blob/main/USAGE.md) first
 6. Run `Quell: Scan Workspace for Secrets` for a first audit. It checks MCP configs too
 
-**[→ Full guide with worked scenarios](https://github.com/Sonofg0tham/Quell/blob/main/USAGE.md)**
+**[→ Full guide with worked scenarios](https://github.com/craigmccart/Quell/blob/main/USAGE.md)**
 
 ---
 

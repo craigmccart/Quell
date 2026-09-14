@@ -12,7 +12,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/sonofg0tham/Quell.git"
+        "url": "https://github.com/craigmccart/Quell.git"
     },
     "engines": {
         "vscode": "^1.107.0"

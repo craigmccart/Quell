@@ -28,7 +28,7 @@ OpenVSX 484 / 7 and Marketplace 65 in 30 days are not a product-quality signal. 
 
 - Has no screenshots on the marketplace listing (the README has a commented-out screenshot block)
 - Has not been launched anywhere (no HN, no Reddit, no Product Hunt, no dev.to post)
-- Has no SEO footprint (nothing links to github.com/sonofg0tham/Quell)
+- Has no SEO footprint (nothing links to github.com/craigmccart/Quell)
 - Is not in any "awesome-list" yet
 - Has no social proof (no testimonials, no review count)
 
@@ -67,7 +67,7 @@ Features that provide ongoing value or target teams:
 A standalone binary built from the extracted `@sonofg0tham/quell-scanner` package. Same engine, different distribution.
 
 - `quell scan` on any directory
-- GitHub Action: `uses: sonofg0tham/quell-action@v1` in a workflow
+- GitHub Action: `uses: craigmccart/quell-action@v1` in a workflow
 - Gate PRs on secret detection before merge
 - Free for open source, paid per private repo
 
