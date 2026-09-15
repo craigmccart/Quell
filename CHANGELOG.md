@@ -2,6 +2,18 @@
 
 All notable changes to Quell will be documented in this file.
 
+## [2.9.2] - 2026-09-15
+
+### Identity and links
+
+- Updated repository, documentation and publisher-profile links for the GitHub
+  account rename from `Sonofg0tham` to `craigmccart`.
+- Prepared a metadata-only marketplace release so the VS Code Marketplace and
+  Open VSX listings render the current GitHub links.
+- Kept the established `Sonofg0tham` marketplace publisher ID and Open VSX
+  namespace, preserving Quell's extension identity and existing update path.
+- No runtime behaviour changed.
+
 ## [2.9.1] - 2026-07-28
 
 ### 📖 Documentation

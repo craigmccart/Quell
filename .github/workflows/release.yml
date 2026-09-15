@@ -64,7 +64,7 @@ jobs:
         with:
           name: "Quell v${{ steps.version.outputs.VERSION }}"
           body: |
-            See [CHANGELOG.md](https://github.com/sonofg0tham/Quell/blob/main/CHANGELOG.md)
+            See [CHANGELOG.md](https://github.com/craigmccart/Quell/blob/main/CHANGELOG.md)
             for what's changed in this release.
           files: "quell-${{ steps.version.outputs.VERSION }}.vsix"
           draft: false
