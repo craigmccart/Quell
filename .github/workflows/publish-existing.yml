@@ -1,0 +1,55 @@
+name: Publish existing release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version without the v prefix
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish VSIX to both marketplaces
+    if: vars.MARKETPLACE_READY == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '20'
+
+      - name: Download VSIX from the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release version: $VERSION"
+            exit 1
+          fi
+          gh release download "v$VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "quell-$VERSION.vsix"
+
+      # Open VSX runs first so a Microsoft Gallery timeout cannot prevent it.
+      - name: Publish to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+          VERSION: ${{ inputs.version }}
+        run: >-
+          npx --yes ovsx@1.0.2 publish "quell-$VERSION.vsix"
+          --pat "$OVSX_PAT" --skip-duplicate
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          VERSION: ${{ inputs.version }}
+        run: >-
+          npx --yes @vscode/vsce@3.9.2 publish
+          --packagePath "quell-$VERSION.vsix" --skip-duplicate
