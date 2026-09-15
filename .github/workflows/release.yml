@@ -104,12 +104,12 @@ jobs:
 
       # Publish tools are version-pinned so a compromised "latest" release of
       # either package can never run inside this job, which holds the PATs.
-      - name: Publish to VS Code Marketplace
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx --yes @vscode/vsce@3.9.2 publish --packagePath quell-*.vsix
-
       - name: Publish to Open VSX
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
-        run: npx --yes ovsx@1.0.2 publish quell-*.vsix --pat "$OVSX_PAT"
+        run: npx --yes ovsx@1.0.2 publish quell-*.vsix --pat "$OVSX_PAT" --skip-duplicate
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx --yes @vscode/vsce@3.9.2 publish --packagePath quell-*.vsix --skip-duplicate
