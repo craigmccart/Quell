@@ -3,10 +3,10 @@
   <img src="https://raw.githubusercontent.com/craigmccart/Quell/main/assets/quell-logo-light.png" alt="Quell" height="56">
 </picture>
 
-[![CI](https://github.com/craigmccart/Quell/actions/workflows/ci.yml/badge.svg)](https://github.com/craigmccart/Quell/actions/workflows/ci.yml)
-[![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Quell-23A7C7)](https://marketplace.visualstudio.com/items?itemName=Sonofg0tham.quell)
-[![Open VSX](https://img.shields.io/open-vsx/v/Sonofg0tham/quell?label=Open%20VSX)](https://open-vsx.org/extension/Sonofg0tham/quell)
-[![npm](https://img.shields.io/npm/v/%40sonofg0tham%2Fquell-scanner?label=quell-scanner)](https://www.npmjs.com/package/@sonofg0tham/quell-scanner)
+[![CI](https://img.shields.io/github/actions/workflow/status/craigmccart/Quell/ci.yml?style=flat-square&label=CI)](https://github.com/craigmccart/Quell/actions/workflows/ci.yml)
+[![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Quell-23A7C7?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=Sonofg0tham.quell)
+[![Open VSX](https://img.shields.io/open-vsx/v/Sonofg0tham/quell?style=flat-square&label=Open%20VSX)](https://open-vsx.org/extension/Sonofg0tham/quell)
+[![npm](https://img.shields.io/npm/v/%40sonofg0tham%2Fquell-scanner?style=flat-square&label=quell-scanner)](https://www.npmjs.com/package/@sonofg0tham/quell-scanner)
 
 **Quell guards the line between you and your AI tools, in both directions.**
 
@@ -321,6 +321,6 @@ Where Quell sits against the **OWASP Top 10 for LLM Applications (2025)** and th
 
 ---
 
-## 📄 License
+## 📄 Licence
 
 [MIT](LICENSE) — free and open source.
