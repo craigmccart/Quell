@@ -15,7 +15,7 @@ updates:
     commit-message:
       prefix: "chore(deps)"
     reviewers:
-      - "sonofg0tham"
+      - "craigmccart"
     ignore:
       # Ignore major version bumps — these should be reviewed manually
       - dependency-name: "*"
@@ -31,3 +31,9 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    groups:
+      # init, autobuild and analyze must move together or CodeQL refuses
+      # to run (mixed versions broke the scheduled scan in Nov 2026).
+      codeql-action:
+        patterns:
+          - "github/codeql-action/*"
