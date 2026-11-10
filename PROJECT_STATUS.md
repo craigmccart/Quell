@@ -6,7 +6,7 @@ Living tracker of where Quell is, what's landed, and what's next. Update after e
 
 ## Snapshot
 
-- **Repo**: `C:\\Users\\craig\\Github Repos\\Quell`, single checkout on `main`
+- **Repo**: [craigmccart/Quell](https://github.com/craigmccart/Quell), single checkout on `main`
 - **Publisher**: `Sonofg0tham`
 - **Extension**: v2.9.1 live on Marketplace and Open VSX (auto-published by the release workflow on tag push)
 - **Scanner npm package**: [`@sonofg0tham/quell-scanner@0.3.0`](https://www.npmjs.com/package/@sonofg0tham/quell-scanner) live on npm — three engines: `SecretScanner`, `PromptGuard`, `McpGuard` (plus `EnvRedactor`)
